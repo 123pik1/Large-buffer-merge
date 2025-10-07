@@ -21,6 +21,7 @@ class Number
     ComparisonResult compareDigitAfterDigit(std::string nmb1, std::string nmb2);
 
 public:
+    Number();
     Number(std::string number);
     bool isInteger = false;
     bool isNegative = false;

@@ -9,7 +9,6 @@ Tape::Tape(const std::string filename) : filename(filename), currentNumber("")
 Tape::Tape(const std::string filename, bool generate) : filename(filename), currentNumber("")
 {
     initFile(filename);
-
 }
 
 void Tape::initFile(string filename)
@@ -29,6 +28,7 @@ Tape::~Tape()
     if (file.is_open())
     {
         file.close();
+        remove(filename.c_str());
     }
 }
 

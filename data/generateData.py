@@ -1,12 +1,13 @@
 import random
 
 
+typeOfCreatingNewRecords = input("To append new records input 'a', to override input 'w'")
+
 numberOfRecords = int(input("Give number of numbers: "))
 minOfDigits = int(input("Minimal number of digits: "))
 maxOfDigits = int(input("Maximal number of digits: "))
 
-file = open("exampleData", "w")
-
+file = open("exampleData", typeOfCreatingNewRecords)
 
 def generateNumber():
     newNumber = ""
@@ -26,9 +27,5 @@ def generateNumber():
 
 for i in range(0, numberOfRecords):
     generateNumber()
-
-
-
-
 
 file.close()

@@ -1,14 +1,20 @@
 #include <string>
 #include <iostream>
+#include <fstream>
 #include "Tape.h"
 using namespace std;
 
 // liczba taśm wykorzystywanych do sortowania
-#define tapeNumber 4
+#define tapeNumber 3
 // lokalizacja pliku z którego jest wczytywanie
 #define inputFile "data/exampleData"
+// bazowa nazwa pliku z taśmą
+#define baseFileName "tapes/tape"
 
+// zlicza dostępy do pamięci
 int memoryAccessCounter = 0;
+// zlicza fazy sortowania
+int sortPhasesCounter = 0;
 
 void merging(Tape **tapes, int idEmpty)
 {
@@ -78,20 +84,54 @@ int sort(Tape **tapes)
     }
 }
 
+int countSeries()
+{
+    Number actualNmb, previousNmb;
+    Tape mainFile(inputFile);
+    int series = 1;
+    mainFile.readNextNumber();
+    actualNmb = mainFile.getCurrentNumber();
+
+    do
+    {
+        previousNmb = actualNmb;
+        mainFile.readNextNumber();
+        if (mainFile.getCurrentNumber().getNumberString() != "")
+            break;
+        actualNmb = mainFile.getCurrentNumber();
+        if (actualNmb.isHigherThan(previousNmb))
+            series++;
+    }
+    while (mainFile.getCurrentNumber().getNumberString() != "");
+
+    return series;
+}
 
 void parseInputFile(Tape** tapes)
 {
+    Number *actualNmb, *previousNmb;
+    int tapeID = 0;
+    int nmbOfSeries = countSeries();
 
+}
+
+void prepareTapes(Tape **tapes)
+{
+    for (int i=0; i<tapeNumber;i++)
+    {
+        tapes[i]->clearTape();
+    }
+    parseInputFile(tapes);
 }
 
 
 int main()
 {
-    string baseFileName = "tapes/tape";
     Tape *tapes[tapeNumber];
     for (int i = 0; i < tapeNumber; i++)
     {
         tapes[i] = new Tape(baseFileName + to_string(i));
     }
+    prepareTapes(tapes);
     sort(tapes);
 }

@@ -20,7 +20,7 @@ public:
     // return currentNumber
     Number getCurrentNumber();
     // reads next number, deletes it from file and saves it tu currentNumber var
-    // if empty -> sets currentNumber to null
+    // if empty -> sets currentNumber to empty string
     void readNextNumber();
     // returns if tape is empty (currentNumber is null and file is now empty)
     bool isEmpty();
@@ -28,4 +28,6 @@ public:
     void appendNumber(Number nmb);
 
     void printTape();
+
+    void clearTape();
 };
