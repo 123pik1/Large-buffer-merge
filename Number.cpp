@@ -1,7 +1,11 @@
 #include "Number.h"
+#include <vector>
+#include <random>
+using namespace std;
 
 bool Number::isHigherThan(Number nmb)
 {
+    //! Add case with negatives
     if (!this->isInteger && nmb.isInteger)
         return false; // float is lower than integer
     if (this->isInteger && !nmb.isInteger)
@@ -60,4 +64,50 @@ Number::ComparisonResult Number::compareDigitAfterDigit(string nmb1, string nmb2
             return LOWER;
     }
     return EQUAL;
+}
+
+string Number::generateNumber(int nmbOfDigits)
+{
+    string number = "";
+
+    random_device rd;
+    mt19937 gen(rd());
+    uniform_int_distribution<int> digitDist(0,9);
+    uniform_int_distribution<int> typeDist(0,1);
+
+    bool makeNegative = (typeDist(gen) == 1);
+    if (makeNegative)
+    {
+        number+="-";
+    }
+
+    bool makeFloat = (typeDist(gen) == 1 && nmbOfDigits>1);
+    int decimalPos = -1; //no decimal pos if makefloat false
+    if(makeFloat)
+    {
+        uniform_int_distribution<int> decPosDist(1,nmbOfDigits);
+        decimalPos = decPosDist(gen);
+    }
+    if (decimalPos==1)
+    {
+        number += to_string(digitDist(gen));
+        // if decimal is after first digit it can be 0
+    }
+    else
+    {
+        uniform_int_distribution<int> firstDigit(1, 9);
+        number += to_string(firstDigit(gen));
+    }
+
+    
+    for (int i=1; i<nmbOfDigits; i++)
+    {
+        if (i==decimalPos)
+        {
+            number += ".";
+        }
+        number += to_string(digitDist(gen));
+    }
+
+    return number;
 }

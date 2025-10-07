@@ -1,10 +1,10 @@
 #include <string>
-using namespace std;
+
 
 // Class to contain number on tape
 class Number
 {
-    string numberString;
+    std::string numberString;
     enum ComparisonResult
     {
         HIGHER,
@@ -13,21 +13,24 @@ class Number
     };
 
     // if nmb1 higher -> HIGHER, nmb2 higher -> LOWER, else EQUAL
-    ComparisonResult compareIntegers(string nmb1, string nmb2);
+    ComparisonResult compareIntegers(std::string nmb1, std::string nmb2);
     // if nmb1 higher -> HIGHER, nmb2 higher -> LOWER, else EQUAL
-    ComparisonResult compareFloats(string nmb1, string nmb2);
+    ComparisonResult compareFloats(std::string nmb1, std::string nmb2);
     // if nmb1 higher -> HIGHER, nmb2 higher -> LOWER, else EQUAL
     // Does not check the number of digits
-    ComparisonResult compareDigitAfterDigit(string nmb1, string nmb2);
+    ComparisonResult compareDigitAfterDigit(std::string nmb1, std::string nmb2);
 
 public:
-    Number(string number);
+    Number(std::string number);
     bool isInteger = false;
+    bool isNegative = false;
 
     // If false nmb is higher, if true nmb is lower or equal
     bool isHigherThan(Number nmb);
-    string getNumberString()
+    std::string getNumberString()
     {
         return numberString;
     }
+
+    static std::string generateNumber(int nmbOfDigits);
 };
