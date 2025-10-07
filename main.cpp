@@ -1,10 +1,13 @@
 #include <string>
 #include <iostream>
 #include <fstream>
+#include <vector>
 #include "Tape.h"
+#include "Fibbonaci.h"
 using namespace std;
 
 // liczba taśm wykorzystywanych do sortowania
+// liczba taśm nie mniejsza od 3
 #define tapeNumber 3
 // lokalizacja pliku z którego jest wczytywanie
 #define inputFile "data/exampleData"
@@ -15,6 +18,8 @@ using namespace std;
 int memoryAccessCounter = 0;
 // zlicza fazy sortowania
 int sortPhasesCounter = 0;
+
+
 
 void merging(Tape **tapes, int idEmpty)
 {
@@ -99,7 +104,9 @@ int countSeries()
         if (mainFile.getCurrentNumber().getNumberString() != "")
             break;
         actualNmb = mainFile.getCurrentNumber();
-        if (actualNmb.isHigherThan(previousNmb))
+        // when previous is higher then adds series
+        //? possible place to check
+        if (!actualNmb.isHigherThan(previousNmb))
             series++;
     }
     while (mainFile.getCurrentNumber().getNumberString() != "");
@@ -111,7 +118,33 @@ void parseInputFile(Tape** tapes)
 {
     Number *actualNmb, *previousNmb;
     int tapeID = 0;
-    int nmbOfSeries = countSeries();
+    int totalSeries = countSeries();
+
+    if (totalSeries==0) return;
+
+    Fibbonaci fibbo;
+    //TODO
+    int sum = 0;
+    while (sum<totalSeries)
+    {
+        sum =0;
+        for (int i=0; i<tapeNumber; i++)
+        {
+            sum += fibbo.get_n_InFuture(i);
+        }
+        if (sum<totalSeries) fibbo.nextFibbo();
+    }
+
+    int distribution[tapeNumber];
+    distribution[0] = fibbo.fibbo1;
+    distribution[1] = fibbo.fibbo2;
+
+    for (int i=2; i<tapeNumber-1; i++)
+    {
+        
+    }
+    distribution[tapeNumber-1] = 0;
+
 
 }
 

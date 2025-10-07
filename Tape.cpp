@@ -28,7 +28,7 @@ Tape::~Tape()
     if (file.is_open())
     {
         file.close();
-        remove(filename.c_str());
+        // remove(filename.c_str());
     }
 }
 

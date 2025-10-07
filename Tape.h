@@ -7,6 +7,7 @@ class Tape
     Number currentNumber;
     std::string filename;
     std::fstream file;
+    int series;
 
     void initFile(const std::string filename);
 public:
@@ -30,4 +31,7 @@ public:
     void printTape();
 
     void clearTape();
+
+    void setSeries(int series);
+    int getSeries();
 };
