@@ -22,7 +22,10 @@ public:
     // reads next number, deletes it from file and saves it tu currentNumber var
     // if empty -> sets currentNumber to null
     void readNextNumber();
+    // returns if tape is empty (currentNumber is null and file is now empty)
     bool isEmpty();
 
     void appendNumber(Number nmb);
+
+    void printTape();
 };

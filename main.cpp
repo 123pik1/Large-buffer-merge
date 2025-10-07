@@ -5,6 +5,8 @@ using namespace std;
 
 // liczba taśm wykorzystywanych do sortowania
 #define tapeNumber 4
+// lokalizacja pliku z którego jest wczytywanie
+#define inputFile "data/exampleData"
 
 int memoryAccessCounter = 0;
 
@@ -75,6 +77,13 @@ int sort(Tape **tapes)
             return i;
     }
 }
+
+
+void parseInputFile(Tape** tapes)
+{
+
+}
+
 
 int main()
 {

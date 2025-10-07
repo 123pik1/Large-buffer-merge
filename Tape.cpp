@@ -9,8 +9,7 @@ Tape::Tape(const std::string filename) : filename(filename), currentNumber("")
 Tape::Tape(const std::string filename, bool generate) : filename(filename), currentNumber("")
 {
     initFile(filename);
-    if (generate)
-        generateTape(50,4,100);
+
 }
 
 void Tape::initFile(string filename)
@@ -39,14 +38,6 @@ bool Tape::isEmpty()
     streampos size = file.tellg();
     file.seekg(0); // Pointer to beginning
     return size == 0;
-}
-
-void Tape::generateTape(int count, int minDigits, int maxDigits)
-{
-    for (int i=0; i<count; i++)
-    {
-
-    }
 }
 
 Number Tape::getCurrentNumber()
