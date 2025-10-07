@@ -32,5 +32,4 @@ public:
         return numberString;
     }
 
-    static std::string generateNumber(int nmbOfDigits);
 };
