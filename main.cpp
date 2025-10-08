@@ -171,14 +171,21 @@ void parseInputFile(Tape **tapes)
             // when higher or equal because series are counted from 0
             if (seriesOnCurrentTape>=distribution[currentTapeId])
             {
-                // do
-                // {
-                //     /* code */
-                // } while (distribution[curr]);
-                
+                do
+                {
+                   currentTapeId = (currentTapeId+1)%(tapeNumber-1);
+                } while (distribution[currentTapeId] == 0 && currentTapeId<tapeNumber-1);
+
+                seriesOnCurrentTape = 0;
             }
         }
+
+        tapes[currentTapeId]->appendNumber(currentNumber);
+        previousNmb=currentNumber;
     }
+
+    for (int i=0; i<tapeNumber; i++)
+        tapes[i]->resetToBeginning();
 
 }
 

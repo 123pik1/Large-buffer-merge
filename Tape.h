@@ -2,22 +2,22 @@
 #include <string>
 #include <fstream>
 
+#define tempTapeLocation "tapes/tmp.txt"
+
 class Tape
 {
     Number currentNumber;
     std::string filename;
+    // filestream is open
     std::fstream file;
-    int series;
+    std::streampos currentBeginningPos = 0;
 
     void initFile(const std::string filename);
+    void deletePreviousRecords();
 public:
     Tape(const std::string filename);
-    Tape(const std::string filename, bool generate);
     ~Tape();
 
-
-    // reads and deletes char from file
-    char readAndDelete();
     // return currentNumber
     Number getCurrentNumber();
     // reads next number and saves it tu currentNumber var
@@ -35,6 +35,6 @@ public:
 
     void clearTape();
 
-    void setSeries(int series);
-    int getSeries();
+
+    void resetToBeginning();
 };
