@@ -2,12 +2,11 @@
 #include <string>
 #include <fstream>
 
-#define tempTapeLocation "tapes/tmp.txt"
+#define tempTapeLocation "tapes/tmp"
 
 class Tape
 {
     Number currentNumber;
-    std::string filename;
     // filestream is open
     std::streampos currentBeginningPos;
 
@@ -17,6 +16,7 @@ public:
     Tape(const std::string filename);
     ~Tape();
     std::fstream file;
+    std::string filename;
 
     // return currentNumber
     Number getCurrentNumber();
@@ -27,6 +27,7 @@ public:
     // if empty -> sets currentNumber to empty string
     void readNextNumberAndDelete();
     // returns if tape is empty (currentNumber is null and file is now empty)
+    // !!!! be carefull functions also resets positon !!!!
     bool isEmpty();
 
     void appendNumber(Number nmb);

@@ -28,18 +28,24 @@ int sortPhasesCounter = 0;
 - menu użytkownika
 */
 
+bool isAuto = true;
+
 void merging(Tape **tapes, int idEmpty)
 {
     while (true)
     {
+        cout<<"w drugim while true - merging"<<endl;
         // znalezienie najmniejszej liczby
         int idLowest = 0;
         for (int i = 0; i < tapeNumber; i++)
         {
             if (i == idEmpty)
                 continue;
-            if (tapes[i]->isEmpty())
+            if (tapes[i]->isEmpty() && i!=idEmpty)
+            {
+                cout<<"jedna taśma spuściała"<<endl;
                 return;
+            }
             if (i == idLowest) //? optional - możliwe do usunięcia
                 continue;
             if (tapes[idLowest]->getCurrentNumber().isHigherThan(tapes[i]->getCurrentNumber()))
@@ -47,9 +53,9 @@ void merging(Tape **tapes, int idEmpty)
                 idLowest = i;
             }
         }
-
+        cout << "dodaje liczbe do pustej taśmy: " << tapes[idLowest]->getCurrentNumber().getNumberString()<<"z "<<tapes[idLowest]->filename << endl;
         // dodanie liczby do pustej taśmy
-        tapes[idEmpty]->appendNumber(tapes[idLowest]->getCurrentNumber());
+        tapes[idEmpty]->appendNumber(tapes[idLowest]->getCurrentNumber().getNumberString());
         tapes[idLowest]->readNextNumber();
     }
 }
@@ -70,18 +76,20 @@ int sortIteration(Tape **tapes)
         }
         cout << "for nr 1 w sortIteration 2" << endl;
     }
-    cout<<"pusta taśma znaleziona";
+    cout<<"pusta taśma znaleziona"<<endl;
     // etap scalania taśm
     merging(tapes, idEmpty);
-    cout<<"taśmy zmergowane";
+    cout<<"taśmy zmergowane"<<endl;
     // zlicza puste taśmy
     int emptyCount = 0;
     for (int i = 0; i < tapeNumber; i++)
     {
+        tapes[i]->printTape();
         if (tapes[i]->isEmpty())
             emptyCount++;
     }
-    cout << ++sortPhasesCounter;
+    cout <<"fazy sortowania: "<< ++sortPhasesCounter<<endl;
+    cout<<"empty counter "<<emptyCount<<endl;
     return emptyCount;
 }
 
@@ -92,13 +100,17 @@ int sort(Tape **tapes)
     // sortuje póki jest więcej niż jedna niepusta taśma
     while (tapeNumber - sortIteration(tapes) > 1)
         ;
-
+    cout<<"posortowane"<<endl;
     // sprawdza która taśma jest niepusta
     for (int i = 0; i < tapeNumber; i++)
     {
         if (!tapes[i]->isEmpty())
+        {
+            cout << "niepusta znaleziona: " << i<<endl;
             return i;
+        }
     }
+    cout<<"niepusta NIEznaleziona"<<endl;
     return 0;
 }
 
@@ -231,4 +243,5 @@ int main()
     int id = sort(tapes);
     Tape outputTape(outputFile);
     tapes[id]->copyTapeTo(&outputTape);
+    outputTape.printTape();
 }
