@@ -19,8 +19,6 @@ int memoryAccessCounter = 0;
 // zlicza fazy sortowania
 int sortPhasesCounter = 0;
 
-
-
 void merging(Tape **tapes, int idEmpty)
 {
     while (true)
@@ -29,7 +27,7 @@ void merging(Tape **tapes, int idEmpty)
         int idLowest = 0;
         for (int i = 0; i < tapeNumber; i++)
         {
-            if (i==idEmpty)
+            if (i == idEmpty)
                 continue;
             if (tapes[i]->isEmpty())
                 return;
@@ -108,55 +106,90 @@ int countSeries()
         //? possible place to check
         if (!actualNmb.isHigherThan(previousNmb))
             series++;
-    }
-    while (mainFile.getCurrentNumber().getNumberString() != "");
+    } while (mainFile.getCurrentNumber().getNumberString() != "");
 
     return series;
 }
 
-void parseInputFile(Tape** tapes)
+void parseInputFile(Tape **tapes)
 {
-    Number *actualNmb, *previousNmb;
+    Number previousNmb, currentNumber;
     int tapeID = 0;
     int totalSeries = countSeries();
 
-    if (totalSeries==0) return;
+    if (totalSeries == 0)
+        return;
 
     Fibbonaci fibbo;
-    //TODO
+    // TODO
     int sum = 0;
-    while (sum<totalSeries)
+    while (sum < totalSeries)
     {
-        sum =0;
-        for (int i=0; i<tapeNumber; i++)
+        sum = 0;
+        for (int i = 0; i < tapeNumber; i++)
         {
             sum += fibbo.get_n_InFuture(i);
         }
-        if (sum<totalSeries) fibbo.nextFibbo();
+        if (sum < totalSeries)
+            fibbo.nextFibbo();
     }
 
     int distribution[tapeNumber];
     distribution[0] = fibbo.fibbo1;
     distribution[1] = fibbo.fibbo2;
 
-    for (int i=2; i<tapeNumber-1; i++)
+    for (int i = 2; i < tapeNumber - 1; i++)
     {
-        
+        distribution[i] = fibbo.get_n_InFuture(i);
     }
-    distribution[tapeNumber-1] = 0;
+    distribution[tapeNumber - 1] = 0;
 
+    // TODO
+    Tape inputTape(inputFile);
+    inputTape.printTape(); //! wyświetlanie pliku przed sortowaniem
+    inputTape.readNextNumber();
+    if (inputTape.getCurrentNumber().getNumberString() == "")
+        return;
+    
+    previousNmb = inputTape.getCurrentNumber();
+    int currentTapeId = 0;
+    int seriesOnCurrentTape = 0;
+
+    tapes[currentTapeId]->appendNumber(previousNmb);
+
+    while(true)
+    {
+        inputTape.readNextNumber();
+        if (inputTape.getCurrentNumber().getNumberString()=="")
+            break;
+        currentNumber = inputTape.getCurrentNumber();
+
+        if (!currentNumber.isHigherThan(previousNmb))
+        {
+            seriesOnCurrentTape++;
+
+            // when higher or equal because series are counted from 0
+            if (seriesOnCurrentTape>=distribution[currentTapeId])
+            {
+                // do
+                // {
+                //     /* code */
+                // } while (distribution[curr]);
+                
+            }
+        }
+    }
 
 }
 
 void prepareTapes(Tape **tapes)
 {
-    for (int i=0; i<tapeNumber;i++)
+    for (int i = 0; i < tapeNumber; i++)
     {
         tapes[i]->clearTape();
     }
     parseInputFile(tapes);
 }
-
 
 int main()
 {

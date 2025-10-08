@@ -20,9 +20,12 @@ public:
     char readAndDelete();
     // return currentNumber
     Number getCurrentNumber();
-    // reads next number, deletes it from file and saves it tu currentNumber var
+    // reads next number and saves it tu currentNumber var
     // if empty -> sets currentNumber to empty string
     void readNextNumber();
+    // reads next number, deletes it from file and saves it tu currentNumber var
+    // if empty -> sets currentNumber to empty string
+    void readNextNumberAndDelete();
     // returns if tape is empty (currentNumber is null and file is now empty)
     bool isEmpty();
 

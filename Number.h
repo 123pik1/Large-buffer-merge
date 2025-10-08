@@ -27,6 +27,7 @@ public:
     bool isNegative = false;
 
     // If false nmb is higher, if true nmb is lower or equal
+    //? maybe change to false when nmb is equal
     bool isHigherThan(Number nmb);
     std::string getNumberString()
     {
