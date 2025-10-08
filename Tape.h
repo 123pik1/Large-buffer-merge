@@ -9,14 +9,14 @@ class Tape
     Number currentNumber;
     std::string filename;
     // filestream is open
-    std::fstream file;
-    std::streampos currentBeginningPos = 0;
+    std::streampos currentBeginningPos;
 
     void initFile(const std::string filename);
     void deletePreviousRecords();
 public:
     Tape(const std::string filename);
     ~Tape();
+    std::fstream file;
 
     // return currentNumber
     Number getCurrentNumber();
@@ -39,4 +39,5 @@ public:
     void resetToBeginning();
 
     void copyTapeTo(Tape *newTape);
+
 };

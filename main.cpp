@@ -21,6 +21,13 @@ int memoryAccessCounter = 0;
 // zlicza fazy sortowania
 int sortPhasesCounter = 0;
 
+//TODO
+/*TODO
+- proper memory access counter
+- sort phase counter
+- menu użytkownika
+*/
+
 void merging(Tape **tapes, int idEmpty)
 {
     while (true)
@@ -50,20 +57,23 @@ void merging(Tape **tapes, int idEmpty)
 // returns how much there are empty tapes
 int sortIteration(Tape **tapes)
 {
+    cout<<"iteracja sortowania"<<endl;
     // znalezienie pustej taśmy
     int idEmpty = 0;
     for (int i = 0; i < tapeNumber; i++)
     {
+        cout<<"for nr 1 w sortIteration"<<endl;
         if (tapes[i]->isEmpty())
         {
             idEmpty = i;
             break;
         }
+        cout << "for nr 1 w sortIteration 2" << endl;
     }
-
+    cout<<"pusta taśma znaleziona";
     // etap scalania taśm
     merging(tapes, idEmpty);
-
+    cout<<"taśmy zmergowane";
     // zlicza puste taśmy
     int emptyCount = 0;
     for (int i = 0; i < tapeNumber; i++)
@@ -71,12 +81,14 @@ int sortIteration(Tape **tapes)
         if (tapes[i]->isEmpty())
             emptyCount++;
     }
+    cout << ++sortPhasesCounter;
     return emptyCount;
 }
 
 // zwraca id niepustej taśmy
 int sort(Tape **tapes)
 {
+    cout<<"początek sortowania"<<endl;
     // sortuje póki jest więcej niż jedna niepusta taśma
     while (tapeNumber - sortIteration(tapes) > 1)
         ;
@@ -87,6 +99,7 @@ int sort(Tape **tapes)
         if (!tapes[i]->isEmpty())
             return i;
     }
+    return 0;
 }
 
 int countSeries()
@@ -123,7 +136,6 @@ void parseInputFile(Tape **tapes)
         return;
 
     Fibbonaci fibbo;
-    // TODO
     int sum = 0;
     while (sum < totalSeries)
     {
@@ -146,24 +158,30 @@ void parseInputFile(Tape **tapes)
     }
     distribution[tapeNumber - 1] = 0;
 
-    // TODO
     Tape inputTape(inputFile);
-    inputTape.printTape(); //! wyświetlanie pliku przed sortowaniem
+    // inputTape.printTape(); //! wyświetlanie pliku przed sortowaniem
+    cout << "fibbonaci zrobiony" << endl;
     inputTape.readNextNumber();
+    cout << "przeczytało pierwszy numer: " << inputTape.getCurrentNumber().getNumberString() << endl;
     if (inputTape.getCurrentNumber().getNumberString() == "")
         return;
-    
+    cout << "pominelo ifa" << endl;
     previousNmb = inputTape.getCurrentNumber();
     int currentTapeId = 0;
     int seriesOnCurrentTape = 0;
+    cout << "inicjalizacja intow i previousnmb" << endl;
 
     tapes[currentTapeId]->appendNumber(previousNmb);
+    cout << "appenduje pierwsza liczbe" << endl;
 
-    while(true)
+    while (true)
     {
         inputTape.readNextNumber();
+        cout << inputTape.file.tellg() << endl;
+        cout <<"Nowa liczba: "<< inputTape.getCurrentNumber().getNumberString() << endl;
         if (inputTape.getCurrentNumber().getNumberString()=="")
             break;
+        cout << "Ta liczba przeszla dalej: " << inputTape.getCurrentNumber().getNumberString() << endl;
         currentNumber = inputTape.getCurrentNumber();
 
         if (!currentNumber.isHigherThan(previousNmb))
@@ -171,24 +189,25 @@ void parseInputFile(Tape **tapes)
             seriesOnCurrentTape++;
 
             // when higher or equal because series are counted from 0
-            if (seriesOnCurrentTape>=distribution[currentTapeId])
+            if (seriesOnCurrentTape >= distribution[currentTapeId])
             {
                 do
                 {
-                   currentTapeId = (currentTapeId+1)%(tapeNumber-1);
-                } while (distribution[currentTapeId] == 0 && currentTapeId<tapeNumber-1);
+                    currentTapeId = (currentTapeId + 1) % (tapeNumber - 1);
+                } while (distribution[currentTapeId] == 0 && currentTapeId < tapeNumber - 1);
 
                 seriesOnCurrentTape = 0;
             }
         }
 
         tapes[currentTapeId]->appendNumber(currentNumber);
-        previousNmb=currentNumber;
+        previousNmb = currentNumber;
+        
     }
-
-    for (int i=0; i<tapeNumber; i++)
+    cout<<"wyjście z while true nr 1"<<endl;
+    for (int i = 0; i < tapeNumber; i++)
         tapes[i]->resetToBeginning();
-
+    cout<<"taśmy zresetowane"<<endl;
 }
 
 void prepareTapes(Tape **tapes)
@@ -206,9 +225,10 @@ int main()
     for (int i = 0; i < tapeNumber; i++)
     {
         tapes[i] = new Tape(baseFileName + to_string(i));
+        tapes[i]->clearTape();
     }
     prepareTapes(tapes);
-    int id =sort(tapes);
+    int id = sort(tapes);
     Tape outputTape(outputFile);
     tapes[id]->copyTapeTo(&outputTape);
 }
