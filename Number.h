@@ -19,15 +19,15 @@ class Number
     // if nmb1 higher -> HIGHER, nmb2 higher -> LOWER, else EQUAL
     // Does not check the number of digits
     ComparisonResult compareDigitAfterDigit(std::string nmb1, std::string nmb2);
-
+    void setInteger();
+    void setNegative();
 public:
     Number();
     Number(std::string number);
     bool isInteger = false;
     bool isNegative = false;
 
-    // If false nmb is higher, if true nmb is lower or equal
-    //? maybe change to false when nmb is equal
+    // If false nmb is higher or equal, if true nmb is lower
     bool isHigherThan(Number nmb);
     void setNumberString(std::string nmb);
     std::string getNumberString()

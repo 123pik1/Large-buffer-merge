@@ -13,6 +13,8 @@ using namespace std;
 #define inputFile "data/exampleData"
 // bazowa nazwa pliku z taśmą
 #define baseFileName "tapes/tape"
+// lokalizacja pliku do którego jest zapisany wynik
+#define outputFile "output/result"
 
 // zlicza dostępy do pamięci
 int memoryAccessCounter = 0;
@@ -206,5 +208,7 @@ int main()
         tapes[i] = new Tape(baseFileName + to_string(i));
     }
     prepareTapes(tapes);
-    sort(tapes);
+    int id =sort(tapes);
+    Tape outputTape(outputFile);
+    tapes[id]->copyTapeTo(&outputTape);
 }

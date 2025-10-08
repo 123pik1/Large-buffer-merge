@@ -37,4 +37,6 @@ public:
 
 
     void resetToBeginning();
+
+    void copyTapeTo(Tape *newTape);
 };

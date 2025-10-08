@@ -78,6 +78,7 @@ void Tape::clearTape()
     ofstream createFile(filename);
     createFile.close();
     file.open(filename, std::ios::in | std::ios::out);
+    currentBeginningPos = 0;
 }
 
 Number Tape::getCurrentNumber()
@@ -103,4 +104,16 @@ void Tape::resetToBeginning()
 {
     file.seekg(currentBeginningPos);
     file.seekp(0, ios::end);
+}
+
+void Tape::copyTapeTo(Tape *newTape)
+{
+    newTape->clearTape();
+    resetToBeginning();
+    string nmb;
+    while (file >> nmb)
+    {
+        newTape->appendNumber(nmb);
+    }
+    resetToBeginning();
 }
