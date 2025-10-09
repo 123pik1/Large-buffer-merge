@@ -8,7 +8,7 @@ class Tape
 {
     Number currentNumber;
     // filestream is open
-    std::streampos currentBeginningPos;
+    std::streampos currentBeginningPos=0;
 
     void initFile(const std::string filename);
     void deletePreviousRecords();

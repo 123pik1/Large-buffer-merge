@@ -173,6 +173,7 @@ void parseInputFile(Tape **tapes)
     Tape inputTape(inputFile);
     // inputTape.printTape(); //! wyświetlanie pliku przed sortowaniem
     cout << "fibbonaci zrobiony" << endl;
+    cout<<"przed zczytaniem: "<<inputTape.getCurrentNumber().getNumberString()<<endl;
     inputTape.readNextNumber();
     cout << "przeczytało pierwszy numer: " << inputTape.getCurrentNumber().getNumberString() << endl;
     if (inputTape.getCurrentNumber().getNumberString() == "")

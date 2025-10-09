@@ -31,7 +31,6 @@ void Tape::initFile(string filename)
 void Tape::readNextNumber()
 {
     string newNumber;
-    resetToBeginning();
     // cout << "Pozycja przed wczytaniem: " << file.tellg() << endl;
     if (!(file >> newNumber))
     {
