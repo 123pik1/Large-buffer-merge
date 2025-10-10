@@ -19,7 +19,8 @@ def generateNumber():
     isNegative = random.randint(0,1)
     if(isNegative==1):
         newNumber+="-"
-    for i in range(0,nmbOfDigits):
+    newNumber+=str(random.randint(1,9))
+    for i in range(1,nmbOfDigits):
         if i == pointPlace:
             newNumber+="."
         newNumber += str(random.randint(0,9))

@@ -29,10 +29,17 @@ bool Number::isHigherThan(Number nmb)
                 return true;
             return false;
         }
+        return false;
     }
     Number::ComparisonResult res = compareFloats(this->numberString, nmb.getNumberString());
-    if (res == LOWER)
-        return false;
+    if (res == HIGHER)
+    {
+        if (this->isNegative)
+            return false;
+        return true;
+    }
+    if (res==LOWER && this->isNegative)
+        return true;
     return false;
 }
 
@@ -65,7 +72,7 @@ Number::ComparisonResult Number::compareFloats(string nmb1, string nmb2)
 Number::ComparisonResult Number::compareDigitAfterDigit(string nmb1, string nmb2)
 {
     char digit1, digit2;
-    for (int i = 0; i < nmb1.length(); i++)
+    for (int i = 0; i < nmb1.length() && i<nmb2.length(); i++)
     {
         digit1 = nmb1.at(i);
         digit2 = nmb2.at(i);
@@ -74,6 +81,10 @@ Number::ComparisonResult Number::compareDigitAfterDigit(string nmb1, string nmb2
         if (digit1 < digit2)
             return LOWER;
     }
+    if (nmb1.length()>nmb2.length())
+        return HIGHER;
+    if (nmb1.length()<nmb2.length())
+        return LOWER;
     return EQUAL;
 }
 

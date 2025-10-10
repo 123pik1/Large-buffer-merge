@@ -34,5 +34,9 @@ public:
     {
         return numberString;
     }
+    std::string to_string()
+    {
+        return numberString;
+    }
 
 };

@@ -31,6 +31,7 @@ void Tape::initFile(string filename)
 void Tape::readNextNumber()
 {
     string newNumber;
+    file.seekg(currentReadPos);
     // cout << "Pozycja przed wczytaniem: " << file.tellg() << endl;
     if (!(file >> newNumber))
     {
@@ -39,6 +40,7 @@ void Tape::readNextNumber()
     }
     // cout << "wczytana liczba: " << newNumber << "liczba znakow" << newNumber.length() << endl;
     // cout << file.tellg() << endl;
+    currentReadPos = file.tellg();
     currentNumber.setNumberString(newNumber);
 }
 
@@ -64,16 +66,21 @@ void Tape::deletePreviousRecords()
     rename(tempTapeLocation, filename.c_str());
 
     file.open(filename, std::ios::in | std::ios::out);
+    file.clear();
+    currentReadPos = 0;
+    currentBeginningPos = 0;
 }
 
 bool Tape::isEmpty()
 {
     streampos originalPos = file.tellg();
-    file.seekg(0);
+    file.seekg(currentReadPos);
 
     string temp;
+    // cout << "sprawdza empty"<< temp << endl;
     bool empty = !(file >> temp);
-
+    // if(empty)
+    //     cout<<"it is empty "<< temp <<endl;
     file.clear();
     file.seekg(originalPos);
 
@@ -100,12 +107,12 @@ Number Tape::getCurrentNumber()
 
 void Tape::appendNumber(Number nmb)
 {
-    cout << "appenduje liczbe: " << nmb.getNumberString() << endl;
-    resetToBeginning();
-
+    // cout << "appenduje liczbe: " << nmb.getNumberString() << endl;
+    streampos currentRead = currentReadPos;
+    file.seekp(0, ios::end);
     file << nmb.getNumberString() << "\n";
-
     file.flush();
+    currentReadPos = currentRead;
 }
 
 void Tape::printTape()
@@ -123,6 +130,7 @@ void Tape::resetToBeginning()
 {
     file.clear();
     file.seekg(currentBeginningPos);
+    currentReadPos = currentBeginningPos;
     file.seekp(0, ios::end);
 }
 
