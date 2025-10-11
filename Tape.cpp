@@ -47,7 +47,6 @@ void Tape::readNextNumber()
 void Tape::readNextNumberAndDelete()
 {
     readNextNumber();
-    // deleting read part of file
     deletePreviousRecords();
 }
 
@@ -118,11 +117,10 @@ void Tape::appendNumber(Number nmb)
 void Tape::printTape()
 {
     streampos temp = file.tellg();
-    resetToBeginning();
+    file.seekg(currentBeginningPos);
     string nmb;
     while ((file >> nmb))
         cout << nmb << "\n";
-    resetToBeginning();
     file.seekg(temp);
 }
 
@@ -137,11 +135,9 @@ void Tape::resetToBeginning()
 void Tape::copyTapeTo(Tape *newTape)
 {
     newTape->clearTape();
-    resetToBeginning();
     string nmb;
     while (file >> nmb)
     {
         newTape->appendNumber(nmb);
     }
-    resetToBeginning();
 }

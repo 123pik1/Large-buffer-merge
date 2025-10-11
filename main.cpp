@@ -30,6 +30,15 @@ int sortPhasesCounter = 0;
 
 bool isAuto = true;
 
+void printTab(int* tab, int size)
+{
+    for (int i=0;i<size;i++)
+    {
+        cout<<tab[i]<<" ";
+    }
+}
+
+
 void merging(Tape **tapes, int idEmpty)
 {
     while (true)
@@ -115,6 +124,7 @@ int sort(Tape **tapes)
     return 0;
 }
 
+// works
 int countSeries()
 {
     Number actualNmb, previousNmb;
@@ -153,7 +163,7 @@ void parseInputFile(Tape **tapes)
     while (sum < totalSeries)
     {
         sum = 0;
-        for (int i = 0; i < tapeNumber; i++)
+        for (int i = 0; i < tapeNumber-1; i++)
         {
             sum += fibbo.get_n_InFuture(i);
         }
@@ -170,22 +180,14 @@ void parseInputFile(Tape **tapes)
         distribution[i] = fibbo.get_n_InFuture(i);
     }
     distribution[tapeNumber - 1] = 0;
-
+    printTab(distribution, tapeNumber);
     Tape inputTape(inputFile);
     // inputTape.printTape(); //! wyświetlanie pliku przed sortowaniem
     cout << "fibbonaci zrobiony" << endl;
-    cout << "przed zczytaniem: " << inputTape.getCurrentNumber().getNumberString() << endl;
-    inputTape.readNextNumber();
-    cout << "przeczytało pierwszy numer: " << inputTape.getCurrentNumber().getNumberString() << endl;
-    if (inputTape.getCurrentNumber().getNumberString() == "")
-        return;
-    cout << "pominelo ifa" << endl;
-    previousNmb = inputTape.getCurrentNumber();
+     cout << "pominelo ifa" << endl;
     int currentTapeId = 0;
     int seriesOnCurrentTape = 0;
     cout << "inicjalizacja intow i previousnmb" << endl;
-    //TODO why it does not append number??
-    tapes[currentTapeId]->appendNumber(previousNmb);
     cout << "appenduje pierwsza liczbe" << endl;
 
     while (true)
@@ -218,8 +220,6 @@ void parseInputFile(Tape **tapes)
         previousNmb = currentNumber;
     }
     cout << "wyjście z while true nr 1" << endl;
-    int a;
-    cin>>a;
     for (int i = 0; i < tapeNumber; i++)
         tapes[i]->resetToBeginning();
     cout << "taśmy zresetowane" << endl;
@@ -227,14 +227,10 @@ void parseInputFile(Tape **tapes)
 
 void prepareTapes(Tape **tapes)
 {
-    for (int i = 0; i < tapeNumber; i++)
-    {
-        tapes[i]->clearTape();
-    }
     parseInputFile(tapes);
 }
 
-int main()
+void newMain()
 {
     Tape *tapes[tapeNumber];
     for (int i = 0; i < tapeNumber; i++)
@@ -247,4 +243,16 @@ int main()
     Tape outputTape(outputFile);
     tapes[id]->copyTapeTo(&outputTape);
     outputTape.printTape();
+}
+
+
+int main()
+{
+    Tape *tapes[tapeNumber];
+    for (int i = 0; i < tapeNumber; i++)
+    {
+        tapes[i] = new Tape(baseFileName + to_string(i));
+        tapes[i]->clearTape();
+    }
+    prepareTapes(tapes);
 }
