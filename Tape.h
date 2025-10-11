@@ -21,12 +21,12 @@ public:
 
     // return currentNumber
     Number getCurrentNumber();
-    // reads next number and saves it tu currentNumber var
+    // reads next number but does not save it tu currentNumber var
     // if empty -> sets currentNumber to empty string
-    void readNextNumber();
+    Number readNextNumber();
     // reads next number, deletes it from file and saves it tu currentNumber var
     // if empty -> sets currentNumber to empty string
-    void readNextNumberAndDelete();
+    Number readNextNumberAndDelete();
     // returns if tape is empty (currentNumber is null and file is now empty)
     // !!!! be carefull functions also resets positon !!!!
     bool isEmpty();

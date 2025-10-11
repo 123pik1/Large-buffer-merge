@@ -30,14 +30,25 @@ int sortPhasesCounter = 0;
 
 bool isAuto = true;
 
-void printTab(int* tab, int size)
+void printTab(int *tab, int size)
 {
-    for (int i=0;i<size;i++)
+    for (int i = 0; i < size; i++)
     {
-        cout<<tab[i]<<" ";
+        cout << tab[i] << " ";
     }
 }
 
+int countEmpty(Tape **tapes)
+{
+    int emptyCount = 0;
+    for (int i = 0; i < tapeNumber; i++)
+    {
+        tapes[i]->printTape();
+        if (tapes[i]->isEmpty())
+            emptyCount++;
+    }
+    return emptyCount;
+}
 
 void merging(Tape **tapes, int idEmpty)
 {
@@ -50,7 +61,7 @@ void merging(Tape **tapes, int idEmpty)
         {
             if (i == idEmpty)
                 continue;
-            if (tapes[i]->isEmpty() || tapes[i]->getCurrentNumber().getNumberString()=="")
+            if (tapes[i]->isEmpty() || tapes[i]->getCurrentNumber().getNumberString() == "")
             {
                 cout << "jedna taśma spuściała" << endl;
                 return;
@@ -91,16 +102,8 @@ int sortIteration(Tape **tapes)
     merging(tapes, idEmpty);
     cout << "taśmy zmergowane" << endl;
     // zlicza puste taśmy
-    int emptyCount = 0;
-    for (int i = 0; i < tapeNumber; i++)
-    {
-        tapes[i]->printTape();
-        if (tapes[i]->isEmpty())
-            emptyCount++;
-    }
     cout << "fazy sortowania: " << ++sortPhasesCounter << endl;
-    cout << "empty counter " << emptyCount << endl;
-    return emptyCount;
+    return countEmpty(tapes);
 }
 
 // zwraca id niepustej taśmy
@@ -163,7 +166,7 @@ void parseInputFile(Tape **tapes)
     while (sum < totalSeries)
     {
         sum = 0;
-        for (int i = 0; i < tapeNumber-1; i++)
+        for (int i = 0; i < tapeNumber - 1; i++)
         {
             sum += fibbo.get_n_InFuture(i);
         }
@@ -184,7 +187,7 @@ void parseInputFile(Tape **tapes)
     Tape inputTape(inputFile);
     // inputTape.printTape(); //! wyświetlanie pliku przed sortowaniem
     cout << "fibbonaci zrobiony" << endl;
-     cout << "pominelo ifa" << endl;
+    cout << "pominelo ifa" << endl;
     int currentTapeId = 0;
     int seriesOnCurrentTape = 0;
     cout << "inicjalizacja intow i previousnmb" << endl;
@@ -235,7 +238,7 @@ void newMain()
     Tape *tapes[tapeNumber];
     for (int i = 0; i < tapeNumber; i++)
     {
-        tapes[i] = new Tape(baseFileName + to_string(i));
+        tapes[i] = new Tape(string(baseFileName) + to_string(i));
         tapes[i]->clearTape();
     }
     prepareTapes(tapes);
@@ -244,7 +247,6 @@ void newMain()
     tapes[id]->copyTapeTo(&outputTape);
     outputTape.printTape();
 }
-
 
 int main()
 {
@@ -255,4 +257,10 @@ int main()
         tapes[i]->clearTape();
     }
     prepareTapes(tapes);
+    sortIteration(tapes);
+    // cout<<countEmpty(tapes)<<endl;
+
+    // int id = sort(tapes);
+    // Tape tape(std::string(baseFileName) + "2");
+    // cout<<tape.isEmpty()<<endl;
 }

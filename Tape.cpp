@@ -28,8 +28,9 @@ void Tape::initFile(string filename)
     }
 }
 
-void Tape::readNextNumber()
+Number Tape::readNextNumber()
 {
+    
     string newNumber;
     file.seekg(currentReadPos);
     // cout << "Pozycja przed wczytaniem: " << file.tellg() << endl;
@@ -42,12 +43,15 @@ void Tape::readNextNumber()
     // cout << file.tellg() << endl;
     currentReadPos = file.tellg();
     currentNumber.setNumberString(newNumber);
+
+    return currentNumber;
 }
 
-void Tape::readNextNumberAndDelete()
+Number Tape::readNextNumberAndDelete()
 {
-    readNextNumber();
+    currentNumber = readNextNumber();
     deletePreviousRecords();
+    return currentNumber;
 }
 
 //? maybe change to not deleting phisically but only logically
@@ -73,7 +77,7 @@ void Tape::deletePreviousRecords()
 bool Tape::isEmpty()
 {
     streampos originalPos = file.tellg();
-    file.seekg(currentReadPos);
+    file.seekg(0);
 
     string temp;
     // cout << "sprawdza empty"<< temp << endl;
@@ -116,12 +120,16 @@ void Tape::appendNumber(Number nmb)
 
 void Tape::printTape()
 {
+    cout<<"Wyświetlenie taśmy "<<filename<<endl;
     streampos temp = file.tellg();
+    if (currentNumber.getNumberString()!="")
+        cout<<currentNumber.getNumberString()<<endl;
     file.seekg(currentBeginningPos);
     string nmb;
     while ((file >> nmb))
         cout << nmb << "\n";
     file.seekg(temp);
+    file.clear();
 }
 
 void Tape::resetToBeginning()
@@ -135,9 +143,12 @@ void Tape::resetToBeginning()
 void Tape::copyTapeTo(Tape *newTape)
 {
     newTape->clearTape();
-    string nmb;
-    while (file >> nmb)
+    Number nmb;
+    newTape->appendNumber(currentNumber);
+    string nmbStr;
+    while (file >> nmbStr)
     {
+        nmb.setNumberString(nmbStr);
         newTape->appendNumber(nmb);
     }
 }
