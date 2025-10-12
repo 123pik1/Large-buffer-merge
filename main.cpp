@@ -50,6 +50,30 @@ int countEmpty(Tape **tapes)
     return emptyCount;
 }
 
+int findNonEmpty(Tape **tapes)
+{
+    for (int i = 0; i < tapeNumber; i++)
+    {
+        if (!tapes[i]->isEmpty())
+        {
+            cout << "niepusta znaleziona: " << i << endl;
+            return i;
+        }
+    }
+    return 0;
+}
+
+int countNonEmpty(Tape **tapes)
+{
+    int notEmpty = 0;
+    for (int i=0; i<tapeNumber; i++)
+    {
+        if (!tapes[i]->isEmpty())
+            notEmpty++;
+    }
+    return notEmpty;
+}
+
 void merging(Tape **tapes, int idEmpty)
 {
     while (true)
@@ -68,6 +92,7 @@ void merging(Tape **tapes, int idEmpty)
             }
             if (idLowest == -1)
                 idLowest = i;
+            cout<<tapes[idLowest]->getCurrentNumber().getNumberString()<<" comparing with: "<<tapes[i]->getCurrentNumber().getNumberString()<<endl;
             if (tapes[idLowest]->getCurrentNumber().isHigherThan(tapes[i]->getCurrentNumber()))
             {
                 idLowest = i;
@@ -115,16 +140,9 @@ int sort(Tape **tapes)
         ;
     cout << "posortowane" << endl;
     // sprawdza która taśma jest niepusta
-    for (int i = 0; i < tapeNumber; i++)
-    {
-        if (!tapes[i]->isEmpty())
-        {
-            cout << "niepusta znaleziona: " << i << endl;
-            return i;
-        }
-    }
+    int nonEmpty = findNonEmpty(tapes);
     cout << "niepusta NIEznaleziona" << endl;
-    return 0;
+    return nonEmpty;
 }
 
 // works
@@ -258,6 +276,9 @@ int main()
     }
     prepareTapes(tapes);
     sortIteration(tapes);
+    sortIteration(tapes);
+    sortIteration(tapes);
+
     // cout<<countEmpty(tapes)<<endl;
 
     // int id = sort(tapes);
