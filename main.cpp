@@ -65,10 +65,10 @@ int findNonEmpty(Tape **tapes)
 
 int countNonEmpty(Tape **tapes)
 {
-    return tapeNumber-countEmpty(tapes);
+    return tapeNumber - countEmpty(tapes);
 }
 
-int findMinimumAmongActive(Tape **tapes, int idEmpty, bool* tapeHasData)
+int findMinimumAmongActive(Tape **tapes, int idEmpty, bool *tapeHasData)
 {
     int idLowest = -1;
     for (int i = 0; i < tapeNumber; i++)
@@ -77,7 +77,7 @@ int findMinimumAmongActive(Tape **tapes, int idEmpty, bool* tapeHasData)
             continue;
 
         if (idLowest == -1 ||
-            !tapes[i]->getCurrentNumber().isHigherThan(tapes[idLowest]->getCurrentNumber()))
+            tapes[i]->getCurrentNumber().isLowerThan(tapes[idLowest]->getCurrentNumber()))
         {
             idLowest = i;
         }
@@ -85,46 +85,38 @@ int findMinimumAmongActive(Tape **tapes, int idEmpty, bool* tapeHasData)
     return idLowest;
 }
 
-void mergeOneRun (Tape **tapes, int idEmpty)
+void mergeOneRun(Tape **tapes, int idEmpty)
 {
-    // Track which tapes still have data in current run
     bool tapeHasData[tapeNumber];
+    Number lastFromTape[tapeNumber]; // Track last number from each tape
+
     for (int i = 0; i < tapeNumber; i++)
     {
         tapeHasData[i] = (i != idEmpty && !tapes[i]->isEmpty());
     }
 
-    Number previousWritten;
-    bool isFirstWrite = true;
-
-    // Merge one complete run
     while (true)
     {
-        // Find minimum among active tapes
         int idLowest = findMinimumAmongActive(tapes, idEmpty, tapeHasData);
-        
+
         if (idLowest == -1)
-            break; // No more data to merge
+            break;
 
         Number current = tapes[idLowest]->getCurrentNumber();
-
-        // Write to output tape
         tapes[idEmpty]->appendNumber(current);
 
-        // Move to next number
+        // Store current number before moving to next
+        lastFromTape[idLowest] = current;
         tapes[idLowest]->readNextNumberAndDelete();
 
-        // Check if this tape's run ended (next number is smaller)
+        // Check if run ended: next number is smaller than current
         if (tapes[idLowest]->isEmpty() ||
-            (!isFirstWrite && !current.isHigherThan(tapes[idLowest]->getCurrentNumber())))
+            lastFromTape[idLowest].isHigherThan(tapes[idLowest]->getCurrentNumber()))
         {
             tapeHasData[idLowest] = false;
         }
 
-        previousWritten = current;
-        isFirstWrite = false;
-
-        // Check if all tapes finished their current runs
+        // Check if all runs finished
         bool anyTapeActive = false;
         for (int i = 0; i < tapeNumber; i++)
         {
@@ -141,8 +133,8 @@ void mergeOneRun (Tape **tapes, int idEmpty)
 
 void merging(Tape **tapes, int idEmpty)
 {
-    while (countNonEmpty(tapes)>=2)
-        mergeOneRun(tapes,idEmpty);
+    while (countNonEmpty(tapes) >= 2)
+        mergeOneRun(tapes, idEmpty);
     // while (true)
     // {
     //     cout << "w drugim while true - merging" << endl;
@@ -172,39 +164,45 @@ void merging(Tape **tapes, int idEmpty)
     // }
 }
 
-// returns how much there are empty tapes
-int sortIteration(Tape **tapes)
-{
-    cout << "iteracja sortowania" << endl;
-    // znalezienie pustej taśmy
-    int idEmpty = tapeNumber;
-    for (int i = 0; i < tapeNumber; i++)
-    {
-        tapes[i]->resetToBeginning();
-        cout << "for nr 1 w sortIteration" << endl;
-        if (tapes[i]->isEmpty())
-        {
-            idEmpty = i;
-            break;
-        }
-        cout << "for nr 1 w sortIteration 2" << endl;
-    }
-    cout << "pusta taśma znaleziona" << endl;
-    // etap scalania taśm
-    merging(tapes, idEmpty);
-    cout << "taśmy zmergowane" << endl;
-    // zlicza puste taśmy
-    cout << "fazy sortowania: " << ++sortPhasesCounter << endl;
-    return countEmpty(tapes);
-}
-
 // zwraca id niepustej taśmy
 int sort(Tape **tapes)
 {
     cout << "początek sortowania" << endl;
     // sortuje póki jest więcej niż jedna niepusta taśma
-    while (tapeNumber - sortIteration(tapes) > 1)
-        ;
+    while (countNonEmpty(tapes) > 1)
+    {
+
+        // Find empty tape
+        int idEmpty = -1;
+        for (int i = 0; i < tapeNumber; i++)
+        {
+            if (tapes[i]->isEmpty())
+            {
+                idEmpty = i;
+                break;
+            }
+        }
+
+        if (idEmpty == -1)
+        {
+            cout << "ERROR: No empty tape found!" << endl;
+            break;
+        }
+
+        // Reset all tapes to beginning
+        for (int i = 0; i < tapeNumber; i++)
+        {
+            tapes[i]->resetToBeginning();
+        }
+
+        cout << "pusta taśma znaleziona: " << idEmpty << endl;
+
+        // Merge phase
+        merging(tapes, idEmpty);
+
+        cout << "taśmy zmergowane" << endl;
+        cout << "fazy sortowania: " << ++sortPhasesCounter << endl;
+    }
     cout << "posortowane" << endl;
     // sprawdza która taśma jest niepusta
     int nonEmpty = findNonEmpty(tapes);
@@ -229,7 +227,7 @@ int countSeries()
         actualNmb = mainFile.getCurrentNumber();
         // when previous is higher then adds series
         //? possible place to check
-        if (!actualNmb.isHigherThan(previousNmb))
+        if (actualNmb.isLowerThan(previousNmb))
             series++;
     } while (mainFile.getCurrentNumber().getNumberString() != "");
 
