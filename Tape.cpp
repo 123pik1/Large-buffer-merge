@@ -37,11 +37,12 @@ Number Tape::readNextNumber()
     if (!(file >> newNumber))
     {
         currentNumber.setNumberString("");
-        return;
+        return currentNumber;
     }
     // cout << "wczytana liczba: " << newNumber << "liczba znakow" << newNumber.length() << endl;
     // cout << file.tellg() << endl;
     currentReadPos = file.tellg();
+    currentBeginningPos = file.tellg();
     currentNumber.setNumberString(newNumber);
 
     return currentNumber;
@@ -87,7 +88,7 @@ bool Tape::isEmpty()
     file.clear();
     file.seekg(originalPos);
 
-    return empty;
+    return empty && currentNumber.getNumberString() == "";
 }
 
 void Tape::clearTape()
