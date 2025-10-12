@@ -30,7 +30,7 @@ void Tape::initFile(string filename)
 
 Number Tape::readNextNumber()
 {
-    
+
     string newNumber;
     file.seekg(currentReadPos);
     // cout << "Pozycja przed wczytaniem: " << file.tellg() << endl;
@@ -121,10 +121,10 @@ void Tape::appendNumber(Number nmb)
 
 void Tape::printTape()
 {
-    cout<<"Wyświetlenie taśmy "<<filename<<endl;
+    cout << "Wyświetlenie taśmy " << filename << endl;
     streampos temp = file.tellg();
-    if (currentNumber.getNumberString()!="")
-        cout<<currentNumber.getNumberString()<<endl;
+    if (currentNumber.getNumberString() != "")
+        cout << currentNumber.getNumberString() << endl;
     file.seekg(currentBeginningPos);
     string nmb;
     while ((file >> nmb))
@@ -143,13 +143,18 @@ void Tape::resetToBeginning()
 
 void Tape::copyTapeTo(Tape *newTape)
 {
+    streampos originalPos = file.tellg();
     newTape->clearTape();
     Number nmb;
-    newTape->appendNumber(currentNumber);
+    if (currentNumber.getNumberString() != "")
+        newTape->appendNumber(currentNumber);
+    file.seekg(currentBeginningPos);
     string nmbStr;
     while (file >> nmbStr)
     {
         nmb.setNumberString(nmbStr);
         newTape->appendNumber(nmb);
     }
+    file.clear();
+    file.seekg(originalPos);
 }

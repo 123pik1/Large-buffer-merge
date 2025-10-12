@@ -21,6 +21,7 @@ class Number
     ComparisonResult compareDigitAfterDigit(std::string nmb1, std::string nmb2);
     void setInteger();
     void setNegative();
+    ComparisonResult isWhatTo(Number nmb);
 public:
     Number();
     Number(std::string number);
@@ -29,6 +30,7 @@ public:
 
     // If false nmb is higher or equal, if true nmb is lower
     bool isHigherThan(Number nmb);
+    bool isLowerThan(Number nmb);
     void setNumberString(std::string nmb);
     std::string getNumberString()
     {

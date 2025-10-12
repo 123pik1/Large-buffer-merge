@@ -65,44 +65,111 @@ int findNonEmpty(Tape **tapes)
 
 int countNonEmpty(Tape **tapes)
 {
-    int notEmpty = 0;
-    for (int i=0; i<tapeNumber; i++)
+    return tapeNumber-countEmpty(tapes);
+}
+
+int findMinimumAmongActive(Tape **tapes, int idEmpty, bool* tapeHasData)
+{
+    int idLowest = -1;
+    for (int i = 0; i < tapeNumber; i++)
     {
-        if (!tapes[i]->isEmpty())
-            notEmpty++;
+        if (!tapeHasData[i])
+            continue;
+
+        if (idLowest == -1 ||
+            !tapes[i]->getCurrentNumber().isHigherThan(tapes[idLowest]->getCurrentNumber()))
+        {
+            idLowest = i;
+        }
     }
-    return notEmpty;
+    return idLowest;
+}
+
+void mergeOneRun (Tape **tapes, int idEmpty)
+{
+    // Track which tapes still have data in current run
+    bool tapeHasData[tapeNumber];
+    for (int i = 0; i < tapeNumber; i++)
+    {
+        tapeHasData[i] = (i != idEmpty && !tapes[i]->isEmpty());
+    }
+
+    Number previousWritten;
+    bool isFirstWrite = true;
+
+    // Merge one complete run
+    while (true)
+    {
+        // Find minimum among active tapes
+        int idLowest = findMinimumAmongActive(tapes, idEmpty, tapeHasData);
+        
+        if (idLowest == -1)
+            break; // No more data to merge
+
+        Number current = tapes[idLowest]->getCurrentNumber();
+
+        // Write to output tape
+        tapes[idEmpty]->appendNumber(current);
+
+        // Move to next number
+        tapes[idLowest]->readNextNumberAndDelete();
+
+        // Check if this tape's run ended (next number is smaller)
+        if (tapes[idLowest]->isEmpty() ||
+            (!isFirstWrite && !current.isHigherThan(tapes[idLowest]->getCurrentNumber())))
+        {
+            tapeHasData[idLowest] = false;
+        }
+
+        previousWritten = current;
+        isFirstWrite = false;
+
+        // Check if all tapes finished their current runs
+        bool anyTapeActive = false;
+        for (int i = 0; i < tapeNumber; i++)
+        {
+            if (tapeHasData[i])
+            {
+                anyTapeActive = true;
+                break;
+            }
+        }
+        if (!anyTapeActive)
+            break;
+    }
 }
 
 void merging(Tape **tapes, int idEmpty)
 {
-    while (true)
-    {
-        cout << "w drugim while true - merging" << endl;
-        // znalezienie najmniejszej liczby
-        int idLowest = -1;
-        for (int i = 0; i < tapeNumber; i++)
-        {
-            if (i == idEmpty)
-                continue;
-            if (tapes[i]->isEmpty() || tapes[i]->getCurrentNumber().getNumberString() == "")
-            {
-                cout << "jedna taśma spuściała" << endl;
-                return;
-            }
-            if (idLowest == -1)
-                idLowest = i;
-            cout<<tapes[idLowest]->getCurrentNumber().getNumberString()<<" comparing with: "<<tapes[i]->getCurrentNumber().getNumberString()<<endl;
-            if (tapes[idLowest]->getCurrentNumber().isHigherThan(tapes[i]->getCurrentNumber()))
-            {
-                idLowest = i;
-            }
-        }
-        cout << "dodaje liczbe do pustej taśmy: " << tapes[idLowest]->getCurrentNumber().getNumberString() << " z " << tapes[idLowest]->filename << endl;
-        // dodanie liczby do pustej taśmy
-        tapes[idEmpty]->appendNumber(tapes[idLowest]->getCurrentNumber());
-        tapes[idLowest]->readNextNumberAndDelete();
-    }
+    while (countNonEmpty(tapes)>=2)
+        mergeOneRun(tapes,idEmpty);
+    // while (true)
+    // {
+    //     cout << "w drugim while true - merging" << endl;
+    //     // znalezienie najmniejszej liczby
+    //     int idLowest = -1;
+    //     for (int i = 0; i < tapeNumber; i++)
+    //     {
+    //         if (i == idEmpty)
+    //             continue;
+    //         if (tapes[i]->isEmpty() || tapes[i]->getCurrentNumber().getNumberString() == "")
+    //         {
+    //             cout << "jedna taśma spuściała" << endl;
+    //             return;
+    //         }
+    //         if (idLowest == -1)
+    //             idLowest = i;
+    //         cout<<tapes[idLowest]->getCurrentNumber().getNumberString()<<" comparing with: "<<tapes[i]->getCurrentNumber().getNumberString()<<endl;
+    //         if (tapes[idLowest]->getCurrentNumber().isHigherThan(tapes[i]->getCurrentNumber()))
+    //         {
+    //             idLowest = i;
+    //         }
+    //     }
+    //     cout << "dodaje liczbe do pustej taśmy: " << tapes[idLowest]->getCurrentNumber().getNumberString() << " z " << tapes[idLowest]->filename << endl;
+    //     // dodanie liczby do pustej taśmy
+    //     tapes[idEmpty]->appendNumber(tapes[idLowest]->getCurrentNumber());
+    //     tapes[idLowest]->readNextNumberAndDelete();
+    // }
 }
 
 // returns how much there are empty tapes
@@ -141,7 +208,6 @@ int sort(Tape **tapes)
     cout << "posortowane" << endl;
     // sprawdza która taśma jest niepusta
     int nonEmpty = findNonEmpty(tapes);
-    cout << "niepusta NIEznaleziona" << endl;
     return nonEmpty;
 }
 
@@ -268,16 +334,23 @@ void newMain()
 
 int main()
 {
-    Tape *tapes[tapeNumber];
-    for (int i = 0; i < tapeNumber; i++)
-    {
-        tapes[i] = new Tape(baseFileName + to_string(i));
-        tapes[i]->clearTape();
-    }
-    prepareTapes(tapes);
-    sortIteration(tapes);
-    sortIteration(tapes);
-    sortIteration(tapes);
+    newMain();
+    // Number nmb1("5.102");
+    // Number nmb2("68586");
+    // cout<<nmb1.isHigherThan(nmb2);
+    // Tape tape1(inputFile);
+    // Tape tape2(outputFile);
+    // tape1.copyTapeTo(&tape2);
+    // Tape *tapes[tapeNumber];
+    // for (int i = 0; i < tapeNumber; i++)
+    // {
+    //     tapes[i] = new Tape(baseFileName + to_string(i));
+    //     tapes[i]->clearTape();
+    // }
+    // prepareTapes(tapes);
+    // sortIteration(tapes);
+    // sortIteration(tapes);
+    // sortIteration(tapes);
 
     // cout<<countEmpty(tapes)<<endl;
 

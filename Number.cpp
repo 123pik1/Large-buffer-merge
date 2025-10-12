@@ -3,53 +3,52 @@
 #include <random>
 using namespace std;
 
+
+Number::ComparisonResult Number::isWhatTo(Number nmb)
+{
+    if (!this->isInteger && nmb.isInteger)
+        return LOWER; // float is lower than integer
+    if (this->isInteger && !nmb.isInteger)
+        return HIGHER;
+
+    if (this->isNegative && !nmb.isNegative)
+        return LOWER; // nmb not negative, this negative
+    if (!this->isNegative && nmb.isNegative)
+        return HIGHER;
+    ComparisonResult res;
+    if (this->isInteger && nmb.isInteger)
+        res = compareIntegers(this->numberString, nmb.getNumberString());
+    else
+        res = compareFloats(this->numberString, nmb.getNumberString());
+
+    if (res == EQUAL)
+        return EQUAL;
+
+    if (this->isNegative)
+        return (res == HIGHER) ? LOWER : HIGHER;
+    else
+        return res;
+}
+
 bool Number::isHigherThan(Number nmb)
 {
-    //! Add case with negatives
-    if (!this->isInteger && nmb.isInteger)
-        return false; // float is lower than integer
-    if (this->isInteger && !nmb.isInteger)
-        return true;
-    if (this->isNegative && !nmb.isNegative)
-        return false; // nmb not negative, this negative
-    if (!this->isNegative && nmb.isNegative)
-        return true;
-    if (this->isInteger && nmb.isInteger)
-    {
-        Number::ComparisonResult res = compareIntegers(this->numberString, nmb.getNumberString());
-        if (res == HIGHER)
-        {
-            if (this->isNegative)
-                return false;
-            return true;
-        }
-        if (res == LOWER)
-        {
-            if (this->isNegative)
-                return true;
-            return false;
-        }
-        return false;
-    }
-    Number::ComparisonResult res = compareFloats(this->numberString, nmb.getNumberString());
-    if (res == HIGHER)
-    {
-        if (this->isNegative)
-            return false;
-        return true;
-    }
-    if (res==LOWER && this->isNegative)
-        return true;
-    return false;
+    return (isWhatTo(nmb) == HIGHER);
+}
+
+bool Number::isLowerThan(Number nmb)
+{
+    return (isWhatTo(nmb) == LOWER);
 }
 
 Number::ComparisonResult Number::compareIntegers(string nmb1, string nmb2)
 {
-    if (nmb1.length() > nmb2.length())
+    string clean1 = (nmb1[0] == '-') ? nmb1.substr(1) : nmb1;
+    string clean2 = (nmb2[0] == '-') ? nmb2.substr(1) : nmb2;
+    if (clean1.length() > clean2.length())
         return HIGHER;
-    if (nmb1.length() < nmb2.length())
+    if (clean1.length() < clean2.length())
         return LOWER;
-    return compareDigitAfterDigit(nmb1, nmb2);
+    return compareDigitAfterDigit(clean1, clean2);
 }
 
 Number::ComparisonResult Number::compareFloats(string nmb1, string nmb2)
@@ -72,7 +71,7 @@ Number::ComparisonResult Number::compareFloats(string nmb1, string nmb2)
 Number::ComparisonResult Number::compareDigitAfterDigit(string nmb1, string nmb2)
 {
     char digit1, digit2;
-    for (int i = 0; i < nmb1.length() && i<nmb2.length(); i++)
+    for (int i = 0; i < nmb1.length() && i < nmb2.length(); i++)
     {
         digit1 = nmb1.at(i);
         digit2 = nmb2.at(i);
@@ -81,9 +80,9 @@ Number::ComparisonResult Number::compareDigitAfterDigit(string nmb1, string nmb2
         if (digit1 < digit2)
             return LOWER;
     }
-    if (nmb1.length()>nmb2.length())
+    if (nmb1.length() > nmb2.length())
         return HIGHER;
-    if (nmb1.length()<nmb2.length())
+    if (nmb1.length() < nmb2.length())
         return LOWER;
     return EQUAL;
 }
@@ -115,7 +114,7 @@ void Number::setInteger()
 
 void Number::setNegative()
 {
-    if (numberString[0] == '-')
+    if (!numberString.empty() && numberString[0] == '-')
         isNegative = true;
     else
         isNegative = false;
