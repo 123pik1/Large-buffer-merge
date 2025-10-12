@@ -43,7 +43,7 @@ int countEmpty(Tape **tapes)
     int emptyCount = 0;
     for (int i = 0; i < tapeNumber; i++)
     {
-        tapes[i]->printTape();
+        // tapes[i]->printTape();
         if (tapes[i]->isEmpty())
             emptyCount++;
     }
@@ -70,10 +70,13 @@ int countNonEmpty(Tape **tapes)
 
 int findMinimumAmongActive(Tape **tapes, int idEmpty, bool *tapeHasData)
 {
+    // id najmniejszej
     int idLowest = -1;
     for (int i = 0; i < tapeNumber; i++)
     {
+        
         if (!tapeHasData[i])
+        // if (tapes[i]->isEmpty())
             continue;
 
         if (idLowest == -1 ||
@@ -87,26 +90,28 @@ int findMinimumAmongActive(Tape **tapes, int idEmpty, bool *tapeHasData)
 
 void mergeOneRun(Tape **tapes, int idEmpty)
 {
+    // czy run się skonczył na danej taśmie
     bool tapeHasData[tapeNumber];
-    Number lastFromTape[tapeNumber]; // Track last number from each tape
+    // ostatnia liczba zapisana z taśmy
+    Number lastFromTape[tapeNumber];
 
     for (int i = 0; i < tapeNumber; i++)
     {
-        tapeHasData[i] = (i != idEmpty && !tapes[i]->isEmpty());
+        tapeHasData[i] = !tapes[i]->isEmpty();
     }
 
     while (true)
     {
+        // index najmniejszej liczby
         int idLowest = findMinimumAmongActive(tapes, idEmpty, tapeHasData);
-
+        // brak najmniejszej liczby - wychodzi
         if (idLowest == -1)
             break;
-
+        cout << tapes[idLowest]->getCurrentNumber().getNumberString()<<endl;
         Number current = tapes[idLowest]->getCurrentNumber();
-        tapes[idEmpty]->appendNumber(current);
 
-        // Store current number before moving to next
-        lastFromTape[idLowest] = current;
+        tapes[idEmpty]->appendNumber(current);
+        lastFromTape[idLowest] = current; // zapisuje ostatni numer który został przekazany
         tapes[idLowest]->readNextNumberAndDelete();
 
         // Check if run ended: next number is smaller than current
@@ -133,8 +138,12 @@ void mergeOneRun(Tape **tapes, int idEmpty)
 
 void merging(Tape **tapes, int idEmpty)
 {
+    int mergeCount = 0;
     while (countNonEmpty(tapes) >= 2)
+    {
         mergeOneRun(tapes, idEmpty);
+        cout << "merge count: " << ++mergeCount << endl;
+    }
     // while (true)
     // {
     //     cout << "w drugim while true - merging" << endl;
@@ -168,9 +177,12 @@ void merging(Tape **tapes, int idEmpty)
 int sort(Tape **tapes)
 {
     cout << "początek sortowania" << endl;
+    int iterations = 0;
     // sortuje póki jest więcej niż jedna niepusta taśma
     while (countNonEmpty(tapes) > 1)
     {
+        cout << "iteracja sortowania " << (++iterations) << endl;
+        cout << "Non-empty tapes: " << countNonEmpty(tapes) << endl;
 
         // Find empty tape
         int idEmpty = -1;
@@ -200,8 +212,11 @@ int sort(Tape **tapes)
         // Merge phase
         merging(tapes, idEmpty);
 
-        cout << "taśmy zmergowane" << endl;
-        cout << "fazy sortowania: " << ++sortPhasesCounter << endl;
+        cout << "After merge phase:" << endl;
+        for (int i = 0; i < tapeNumber; i++)
+        {
+            cout << "Tape " << i << " empty: " << tapes[i]->isEmpty() << endl;
+        }
     }
     cout << "posortowane" << endl;
     // sprawdza która taśma jest niepusta
@@ -265,24 +280,24 @@ void parseInputFile(Tape **tapes)
         distribution[i] = fibbo.get_n_InFuture(i);
     }
     distribution[tapeNumber - 1] = 0;
-    printTab(distribution, tapeNumber);
+    // printTab(distribution, tapeNumber);
     Tape inputTape(inputFile);
     // inputTape.printTape(); //! wyświetlanie pliku przed sortowaniem
-    cout << "fibbonaci zrobiony" << endl;
-    cout << "pominelo ifa" << endl;
+    // cout << "fibbonaci zrobiony" << endl;
+    // cout << "pominelo ifa" << endl;
     int currentTapeId = 0;
     int seriesOnCurrentTape = 0;
-    cout << "inicjalizacja intow i previousnmb" << endl;
-    cout << "appenduje pierwsza liczbe" << endl;
+    // cout << "inicjalizacja intow i previousnmb" << endl;
+    // cout << "appenduje pierwsza liczbe" << endl;
 
     while (true)
     {
         inputTape.readNextNumber();
-        cout << inputTape.file.tellg() << endl;
-        cout << "Nowa liczba: " << inputTape.getCurrentNumber().getNumberString() << endl;
+        // cout << inputTape.file.tellg() << endl;
+        // cout << "Nowa liczba: " << inputTape.getCurrentNumber().getNumberString() << endl;
         if (inputTape.getCurrentNumber().getNumberString() == "")
             break;
-        cout << "Ta liczba przeszla dalej: " << inputTape.getCurrentNumber().getNumberString() << endl;
+        // cout << "Ta liczba przeszla dalej: " << inputTape.getCurrentNumber().getNumberString() << endl;
         currentNumber = inputTape.getCurrentNumber();
 
         if (!currentNumber.isHigherThan(previousNmb))
@@ -304,10 +319,10 @@ void parseInputFile(Tape **tapes)
         tapes[currentTapeId]->appendNumber(currentNumber);
         previousNmb = currentNumber;
     }
-    cout << "wyjście z while true nr 1" << endl;
+    // cout << "wyjście z while true nr 1" << endl;
     for (int i = 0; i < tapeNumber; i++)
         tapes[i]->resetToBeginning();
-    cout << "taśmy zresetowane" << endl;
+    // cout << "taśmy zresetowane" << endl;
 }
 
 void prepareTapes(Tape **tapes)
@@ -327,7 +342,7 @@ void newMain()
     int id = sort(tapes);
     Tape outputTape(outputFile);
     tapes[id]->copyTapeTo(&outputTape);
-    outputTape.printTape();
+    // outputTape.printTape();
 }
 
 int main()
