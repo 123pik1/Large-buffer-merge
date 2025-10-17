@@ -2,33 +2,109 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
+#include <cstdlib>
 #include "Tape.h"
 #include "Fibbonaci.h"
+#include "constants.h"
 using namespace std;
-
-// liczba taśm wykorzystywanych do sortowania
-// liczba taśm nie mniejsza od 3
-#define tapeNumber 3
-// lokalizacja pliku z którego jest wczytywanie
-#define inputFile "data/exampleData"
-// bazowa nazwa pliku z taśmą
-#define baseFileName "tapes/tape"
-// lokalizacja pliku do którego jest zapisany wynik
-#define outputFile "output/result"
 
 // zlicza dostępy do pamięci
 int memoryAccessCounter = 0;
 // zlicza fazy sortowania
 int sortPhasesCounter = 0;
+// zlicza zapisy
+int saveCounter = 0;
+// zlicza odczyty
+int readCounter = 0;
 
 // TODO
 /*TODO
 - proper memory access counter
 - sort phase counter
 - menu użytkownika
+- określenie rozmiaru strony dyskowej - u mnie jeden rekord? - czy dodatkowa implementacja potrzebna
+- zrobienie odczytywania stronami dyskowymi - w klasie Tape
 */
+// TODO - change parsing input file to not count series
 
-bool isAuto = true;
+bool isAuto = false;
+int iterationsToPause = 0;
+
+void printTapes(Tape **tapes)
+{
+    for (int i = 0; i < tapeNumber; i++)
+    {
+        tapes[i]->printTape();
+    }
+}
+
+void runPythonScript()
+{
+    int result = system("python3 data/generateData.py");
+    if (result != 0)
+        cout << "problem with script" << endl;
+}
+
+void addNumber(Tape &mainTape)
+{
+    string number;
+    cin >> number;
+    mainTape.appendNumber(Number(number));
+}
+
+void interMediateMenu(Tape **tapes)
+{
+    cout << "1. Auto\n\
+    2. Go n iteration in future\n\
+    3. Print tapes\n\
+    everything else: Continue"
+         << endl;
+    int option;
+    cin >> option;
+    switch (option)
+    {
+    case 1:
+        isAuto = true;
+        break;
+    case 2:
+        cin >> iterationsToPause;
+        break;
+    case 3:
+        printTapes(tapes);
+        break;
+    default:
+        break;
+    }
+}
+
+void entryMenu(Tape &mainTape)
+{
+    cout << "1. Auto\n\
+    2. Append number\n\
+    3. Generate Numbers\n\
+    4. Go n iterations in future\n\
+    everything else: Continue"
+         << endl;
+    int option;
+    cin >> option;
+    switch (option)
+    {
+    case 1:
+        isAuto = true;
+        break;
+    case 2:
+        addNumber(mainTape);
+        break;
+    case 3:
+        runPythonScript();
+        break;
+    case 4:
+        cin >> iterationsToPause;
+        break;
+    default:
+        break;
+    }
+}
 
 void printTab(int *tab, int size)
 {
@@ -63,6 +139,19 @@ int findNonEmpty(Tape **tapes)
     return 0;
 }
 
+int findEmpty(Tape **tapes)
+{
+    for (int i = 0; i < tapeNumber; i++)
+    {
+        if (tapes[i]->isEmpty())
+        {
+            cout << "niepusta znaleziona: " << i << endl;
+            return i;
+        }
+    }
+    return -1;
+}
+
 int countNonEmpty(Tape **tapes)
 {
     return tapeNumber - countEmpty(tapes);
@@ -74,9 +163,9 @@ int findMinimumAmongActive(Tape **tapes, int idEmpty, bool *tapeHasData)
     int idLowest = -1;
     for (int i = 0; i < tapeNumber; i++)
     {
-        
+
         if (!tapeHasData[i])
-        // if (tapes[i]->isEmpty())
+            // if (tapes[i]->isEmpty())
             continue;
 
         if (idLowest == -1 ||
@@ -107,7 +196,7 @@ void mergeOneRun(Tape **tapes, int idEmpty)
         // brak najmniejszej liczby - wychodzi
         if (idLowest == -1)
             break;
-        cout << tapes[idLowest]->getCurrentNumber().getNumberString()<<endl;
+        cout << tapes[idLowest]->getCurrentNumber().getNumberString() << endl;
         Number current = tapes[idLowest]->getCurrentNumber();
 
         tapes[idEmpty]->appendNumber(current);
@@ -143,34 +232,11 @@ void merging(Tape **tapes, int idEmpty)
     {
         mergeOneRun(tapes, idEmpty);
         cout << "merge count: " << ++mergeCount << endl;
+        if (iterationsToPause > 0)
+            iterationsToPause--;
+        if (!isAuto && iterationsToPause == 0)
+            interMediateMenu(tapes);
     }
-    // while (true)
-    // {
-    //     cout << "w drugim while true - merging" << endl;
-    //     // znalezienie najmniejszej liczby
-    //     int idLowest = -1;
-    //     for (int i = 0; i < tapeNumber; i++)
-    //     {
-    //         if (i == idEmpty)
-    //             continue;
-    //         if (tapes[i]->isEmpty() || tapes[i]->getCurrentNumber().getNumberString() == "")
-    //         {
-    //             cout << "jedna taśma spuściała" << endl;
-    //             return;
-    //         }
-    //         if (idLowest == -1)
-    //             idLowest = i;
-    //         cout<<tapes[idLowest]->getCurrentNumber().getNumberString()<<" comparing with: "<<tapes[i]->getCurrentNumber().getNumberString()<<endl;
-    //         if (tapes[idLowest]->getCurrentNumber().isHigherThan(tapes[i]->getCurrentNumber()))
-    //         {
-    //             idLowest = i;
-    //         }
-    //     }
-    //     cout << "dodaje liczbe do pustej taśmy: " << tapes[idLowest]->getCurrentNumber().getNumberString() << " z " << tapes[idLowest]->filename << endl;
-    //     // dodanie liczby do pustej taśmy
-    //     tapes[idEmpty]->appendNumber(tapes[idLowest]->getCurrentNumber());
-    //     tapes[idLowest]->readNextNumberAndDelete();
-    // }
 }
 
 // zwraca id niepustej taśmy
@@ -184,16 +250,8 @@ int sort(Tape **tapes)
         cout << "iteracja sortowania " << (++iterations) << endl;
         cout << "Non-empty tapes: " << countNonEmpty(tapes) << endl;
 
-        // Find empty tape
-        int idEmpty = -1;
-        for (int i = 0; i < tapeNumber; i++)
-        {
-            if (tapes[i]->isEmpty())
-            {
-                idEmpty = i;
-                break;
-            }
-        }
+        //
+        int idEmpty = findEmpty(tapes);
 
         if (idEmpty == -1)
         {
@@ -240,8 +298,6 @@ int countSeries()
         if (mainFile.getCurrentNumber().getNumberString() == "")
             break;
         actualNmb = mainFile.getCurrentNumber();
-        // when previous is higher then adds series
-        //? possible place to check
         if (actualNmb.isLowerThan(previousNmb))
             series++;
     } while (mainFile.getCurrentNumber().getNumberString() != "");
@@ -251,6 +307,8 @@ int countSeries()
 
 void parseInputFile(Tape **tapes)
 {
+    Tape inputTape(inputFile);
+    entryMenu(inputTape);
     Number previousNmb, currentNumber;
     int tapeID = 0;
     int totalSeries = countSeries();
@@ -281,7 +339,6 @@ void parseInputFile(Tape **tapes)
     }
     distribution[tapeNumber - 1] = 0;
     // printTab(distribution, tapeNumber);
-    Tape inputTape(inputFile);
     // inputTape.printTape(); //! wyświetlanie pliku przed sortowaniem
     // cout << "fibbonaci zrobiony" << endl;
     // cout << "pominelo ifa" << endl;
@@ -348,26 +405,4 @@ void newMain()
 int main()
 {
     newMain();
-    // Number nmb1("5.102");
-    // Number nmb2("68586");
-    // cout<<nmb1.isHigherThan(nmb2);
-    // Tape tape1(inputFile);
-    // Tape tape2(outputFile);
-    // tape1.copyTapeTo(&tape2);
-    // Tape *tapes[tapeNumber];
-    // for (int i = 0; i < tapeNumber; i++)
-    // {
-    //     tapes[i] = new Tape(baseFileName + to_string(i));
-    //     tapes[i]->clearTape();
-    // }
-    // prepareTapes(tapes);
-    // sortIteration(tapes);
-    // sortIteration(tapes);
-    // sortIteration(tapes);
-
-    // cout<<countEmpty(tapes)<<endl;
-
-    // int id = sort(tapes);
-    // Tape tape(std::string(baseFileName) + "2");
-    // cout<<tape.isEmpty()<<endl;
 }
