@@ -2,6 +2,7 @@
 #include <random>
 #include <iostream>
 using namespace std;
+
 Tape::Tape(const std::string filename) : filename(filename), currentNumber(""), currentBeginningPos(0)
 {
     initFile(filename);
@@ -33,42 +34,43 @@ void Tape::readPage()
 {
     readCounter++;
     string newNumber = "";
-    int iterator = 0;
     for (int i = 0; i < pageSize; i++)
     {
         if (file >> newNumber)
-            currentReadPage->setNumberString(newNumber);
+            currentReadPage[i].setNumberString(newNumber);
         else
-            currentReadPage->setNumberString("");
+            currentReadPage[i].setNumberString("");
     }
+    elementOnReadPage = 0;
+    if (file.eof() || file.fail())
+        file.clear();
 }
 
 Number Tape::readNextNumber()
 {
 
-    if (elementOnPage < pageSize)
+    if (elementOnReadPage < pageSize && currentReadPage[0].getNumberString() == "")
     {
-        currentNumber = currentReadPage[elementOnPage];
-        elementOnPage++;
-        return currentNumber;
+        return getNextFromPage();
     }
-    elementOnPage = 0;
+    resetReadPage();
+    readPage();
+    return getNextFromPage();
+}
 
-    string newNumber;
-    file.seekg(currentReadPos);
-    // cout << "Pozycja przed wczytaniem: " << file.tellg() << endl;
-    if (!(file >> newNumber))
-    {
-        currentNumber.setNumberString("");
-        return currentNumber;
-    }
-    // cout << "wczytana liczba: " << newNumber << "liczba znakow" << newNumber.length() << endl;
-    // cout << file.tellg() << endl;
-    currentReadPos = file.tellg();
-    currentBeginningPos = file.tellg();
-    currentNumber.setNumberString(newNumber);
-
+Number Tape::getNextFromPage()
+{
+    currentNumber = currentReadPage[elementOnReadPage];
+    elementOnReadPage++;
     return currentNumber;
+}
+
+void Tape::resetReadPage()
+{
+    for (int i = 0; i < pageSize; i++)
+    {
+        currentReadPage[i].setNumberString("");
+    }
 }
 
 Number Tape::readNextNumberAndDelete()
@@ -100,18 +102,10 @@ void Tape::deletePreviousRecords()
 
 bool Tape::isEmpty()
 {
-    streampos originalPos = file.tellg();
-    file.seekg(0);
-
-    string temp;
-    // cout << "sprawdza empty"<< temp << endl;
-    bool empty = !(file >> temp);
-    // if(empty)
-    //     cout<<"it is empty "<< temp <<endl;
-    file.clear();
-    file.seekg(originalPos);
-
-    return empty && currentNumber.getNumberString() == "";
+    if (currentReadPage[0].getNumberString() != "")
+        return false;
+    readPage();
+    return currentReadPage[0].getNumberString() == "";
 }
 
 void Tape::clearTape()
@@ -135,11 +129,11 @@ Number Tape::getCurrentNumber()
 void Tape::appendNumber(Number nmb)
 {
     // cout << "appenduje liczbe: " << nmb.getNumberString() << endl;
-    streampos currentRead = currentReadPos;
-    file.seekp(0, ios::end);
-    file << nmb.getNumberString() << "\n";
-    file.flush();
-    currentReadPos = currentRead;
+    if (elementOnWritePage < pageSize)
+    {
+        currentWritePage[elementOnWritePage] = nmb;
+        
+    }
 }
 
 void Tape::printTape()

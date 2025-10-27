@@ -14,10 +14,15 @@ class Tape
     std::streampos currentBeginningPos = 0;
     std::streampos currentReadPos = 0;
     Number currentReadPage[pageSize];
-    int elementOnPage = 0;
+    int elementOnReadPage = 0;
+    Number currentWritePage[pageSize];
+    int elementOnWritePage=0;
 
     void initFile(const std::string filename);
     void readPage();
+    void resetReadPage();
+    Number getNextFromPage();
+    void writePage();
 
 public:
     Tape(const std::string filename);
