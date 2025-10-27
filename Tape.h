@@ -14,22 +14,28 @@ class Tape
     std::streampos currentBeginningPos = 0;
     std::streampos currentReadPos = 0;
     Number currentReadPage[pageSize];
-    int elementOnReadPage = 0;
+    int elementOnReadPage = pageSize;
     Number currentWritePage[pageSize];
     int elementOnWritePage=0;
+
 
     void initFile(const std::string filename);
     void readPage();
     void resetReadPage();
     Number getNextFromPage();
     void writePage();
-
+    void resetWritePage();
+    void writeToPage(Number nmb);
 public:
     Tape(const std::string filename);
     ~Tape();
     std::fstream file;
     std::string filename;
     void deletePreviousRecords();
+    Number* getReadPage()
+    {
+        return currentReadPage;
+    }
 
     // return currentNumber
     Number getCurrentNumber();

@@ -48,12 +48,11 @@ void Tape::readPage()
 
 Number Tape::readNextNumber()
 {
-
     if (elementOnReadPage < pageSize && currentReadPage[0].getNumberString() == "")
     {
         return getNextFromPage();
     }
-    resetReadPage();
+    // resetReadPage();
     readPage();
     return getNextFromPage();
 }
@@ -129,12 +128,45 @@ Number Tape::getCurrentNumber()
 void Tape::appendNumber(Number nmb)
 {
     // cout << "appenduje liczbe: " << nmb.getNumberString() << endl;
+    file.clear();
+    file.seekp(0, ios::end);
+
     if (elementOnWritePage < pageSize)
     {
-        currentWritePage[elementOnWritePage] = nmb;
-        
+        writeToPage(nmb);
+        return;
     }
+    writePage();
+    writeToPage(nmb);
 }
+
+void Tape::writeToPage(Number nmb)
+{
+    currentWritePage[elementOnWritePage] = nmb;
+    elementOnWritePage++;
+}
+
+
+void Tape::resetWritePage()
+{
+    for (int i=0; i<pageSize;i++)
+    {
+        currentWritePage[i].setNumberString("");
+    }
+    elementOnWritePage =0;
+}
+
+
+void Tape::writePage()
+{
+    for (int i=0;i<pageSize;i++)
+    {
+        file << currentWritePage[i].getNumberString()<<endl;
+    }
+    file.flush();
+    resetWritePage();
+}
+
 
 void Tape::printTape()
 {

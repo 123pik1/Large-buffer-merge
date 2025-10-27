@@ -17,7 +17,6 @@ int saveCounter = 0;
 // zlicza odczyty
 int readCounter = 0;
 
-extern void entryMenu(Tape &mainTape);
 
 // TODO
 /*TODO
