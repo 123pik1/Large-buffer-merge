@@ -28,8 +28,31 @@ void Tape::initFile(string filename)
     }
 }
 
+// readPage liczy się jako jeden dostęp odczytu
+void Tape::readPage()
+{
+    readCounter++;
+    string newNumber = "";
+    int iterator = 0;
+    for (int i = 0; i < pageSize; i++)
+    {
+        if (file >> newNumber)
+            currentReadPage->setNumberString(newNumber);
+        else
+            currentReadPage->setNumberString("");
+    }
+}
+
 Number Tape::readNextNumber()
 {
+
+    if (elementOnPage < pageSize)
+    {
+        currentNumber = currentReadPage[elementOnPage];
+        elementOnPage++;
+        return currentNumber;
+    }
+    elementOnPage = 0;
 
     string newNumber;
     file.seekg(currentReadPos);

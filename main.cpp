@@ -79,7 +79,8 @@ void interMediateMenu(Tape **tapes)
 
 void entryMenu(Tape &mainTape)
 {
-    cout << "1. Auto\n\
+    cout << "\
+    1. Auto\n\
     2. Append number\n\
     3. Generate Numbers\n\
     4. Go n iterations in future\n\
@@ -119,7 +120,6 @@ int countEmpty(Tape **tapes)
     int emptyCount = 0;
     for (int i = 0; i < tapeNumber; i++)
     {
-        // tapes[i]->printTape();
         if (tapes[i]->isEmpty())
             emptyCount++;
     }
@@ -203,14 +203,14 @@ void mergeOneRun(Tape **tapes, int idEmpty)
         lastFromTape[idLowest] = current; // zapisuje ostatni numer który został przekazany
         tapes[idLowest]->readNextNumberAndDelete();
 
-        // Check if run ended: next number is smaller than current
+        // sprawdzenie czy kolejna liczba jest mniejsza od obecnej
         if (tapes[idLowest]->isEmpty() ||
             lastFromTape[idLowest].isHigherThan(tapes[idLowest]->getCurrentNumber()))
         {
             tapeHasData[idLowest] = false;
         }
 
-        // Check if all runs finished
+        // sprawdzenie czy wszystkie runy są skończone
         bool anyTapeActive = false;
         for (int i = 0; i < tapeNumber; i++)
         {

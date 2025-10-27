@@ -2,16 +2,23 @@
 #include <string>
 #include <fstream>
 
+#define pageSize 4 // page size in bytes is 4*8=32
 #define tempTapeLocation "tapes/tmp"
 
 class Tape
 {
+    int readCounter = 0;
+    int writeCounter = 0;
     Number currentNumber;
     // filestream is open
-    std::streampos currentBeginningPos=0;
-    std::streampos currentReadPos=0;
+    std::streampos currentBeginningPos = 0;
+    std::streampos currentReadPos = 0;
+    Number currentReadPage[pageSize];
+    int elementOnPage = 0;
 
     void initFile(const std::string filename);
+    void readPage();
+
 public:
     Tape(const std::string filename);
     ~Tape();
@@ -28,7 +35,6 @@ public:
     // if empty -> sets currentNumber to empty string
     Number readNextNumberAndDelete();
     // returns if tape is empty (currentNumber is null and file is now empty)
-    // !!!! be carefull functions also resets positon !!!!
     bool isEmpty();
 
     void appendNumber(Number nmb);
@@ -37,9 +43,10 @@ public:
 
     void clearTape();
 
-
     void resetToBeginning();
 
     void copyTapeTo(Tape *newTape);
 
+    int getWriteCounter();
+    int getReadCounter();
 };
