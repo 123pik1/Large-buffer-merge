@@ -48,7 +48,7 @@ void Tape::readPage()
 
 Number Tape::readNextNumber()
 {
-    if (elementOnReadPage < pageSize && currentReadPage[0].getNumberString() == "")
+    if (elementOnReadPage < pageSize && currentReadPage[0].getNumberString() != "")
     {
         return getNextFromPage();
     }
@@ -99,13 +99,35 @@ void Tape::deletePreviousRecords()
     currentBeginningPos = 0;
 }
 
+// ...existing code...
 bool Tape::isEmpty()
 {
-    if (currentReadPage[0].getNumberString() != "")
+    // If we already have a current number -> not empty
+    if (currentNumber.getNumberString() != "")
         return false;
-    readPage();
-    return currentReadPage[0].getNumberString() == "";
+
+    // If there are unread numbers in the current read page -> not empty
+    for (int i = elementOnReadPage; i < pageSize; ++i)
+        if (currentReadPage[i].getNumberString() != "")
+            return false;
+
+    // Probe the underlying file without consuming data:
+    streampos pos = file.tellg();
+    // Ensure stream is ready for read attempt
+    file.clear();
+    string tmp;
+    bool hasMore = static_cast<bool>(file >> tmp);
+
+    // restore stream state and position
+    file.clear();
+    if (pos != -1)
+        file.seekg(pos);
+    else
+        file.seekg(0, ios::cur);
+
+    return !hasMore;
 }
+// ...existing code...
 
 void Tape::clearTape()
 {
@@ -115,6 +137,8 @@ void Tape::clearTape()
     createFile.close();
     file.open(filename, std::ios::in | std::ios::out);
     currentBeginningPos = 0;
+    resetReadPage();
+    resetWritePage();
 }
 
 Number Tape::getCurrentNumber()
@@ -187,6 +211,7 @@ void Tape::resetToBeginning()
     file.clear();
     file.seekg(currentBeginningPos);
     currentReadPos = currentBeginningPos;
+    resetReadPage(); resetWritePage();
     file.seekp(0, ios::end);
 }
 

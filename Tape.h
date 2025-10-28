@@ -19,11 +19,11 @@ class Tape
     int elementOnWritePage=0;
 
 
+
     void initFile(const std::string filename);
     void readPage();
     void resetReadPage();
     Number getNextFromPage();
-    void writePage();
     void resetWritePage();
     void writeToPage(Number nmb);
 public:
@@ -60,4 +60,5 @@ public:
 
     int getWriteCounter();
     int getReadCounter();
+    void writePage();
 };

@@ -124,7 +124,6 @@ int countEmpty(Tape **tapes)
         if (tapes[i]->isEmpty())
         {
             emptyCount++;
-            tapes[i]->printTape();
         }
     }
     return emptyCount;
@@ -201,7 +200,7 @@ void mergeOneRun(Tape **tapes, int idEmpty)
         // brak najmniejszej liczby - wychodzi
         if (idLowest == -1)
             break;
-        cout << tapes[idLowest]->getCurrentNumber().getNumberString() << endl;
+        // cout << tapes[idLowest]->getCurrentNumber().getNumberString() << endl;
         Number current = tapes[idLowest]->getCurrentNumber();
 
         tapes[idEmpty]->appendNumber(current);
@@ -284,6 +283,7 @@ int sort(Tape **tapes)
     cout << "posortowane" << endl;
     // sprawdza która taśma jest niepusta
     int nonEmpty = findNonEmpty(tapes);
+    cout << nonEmpty<<endl;
     return nonEmpty;
 }
 
@@ -354,8 +354,10 @@ void parseInputFile(Tape **tapes)
         // cout << "taśmy zresetowane" << endl;
     }
     for (int i = 0; i < tapeNumber; i++)
+    {
+        tapes[i]->writePage();
         tapes[i]->resetToBeginning();
-    printTapes(tapes);
+    }
 }
 
 void prepareTapes(Tape **tapes)
@@ -372,21 +374,15 @@ void newMain()
         tapes[i]->clearTape();
     }
     prepareTapes(tapes);
-    int id = sort(tapes);
-    Tape outputTape(outputFile);
-    tapes[id]->copyTapeTo(&outputTape);
-    cout << id << endl;
-    outputTape.printTape();
+    tapes[0]->printTape();
+    cout<<"puste " << countEmpty(tapes)<<endl;
+    // int id = sort(tapes);
+    // Tape outputTape(outputFile);
+    // tapes[id]->copyTapeTo(&outputTape);
+    // outputTape.printTape();
 }
 
 int main()
 {
-    // newMain();
-    Tape *tapes[tapeNumber];
-    for (int i = 0; i < tapeNumber; i++)
-    {
-        tapes[i] = new Tape(string(baseFileName) + to_string(i));
-        tapes[i]->clearTape();
-    }
-    prepareTapes(tapes);
+    newMain();
 }
