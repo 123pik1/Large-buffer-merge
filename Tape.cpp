@@ -1,11 +1,14 @@
 #include "Tape.h"
 #include <random>
 #include <iostream>
+#include <vector>
 using namespace std;
 
 Tape::Tape(const std::string filename) : filename(filename), currentNumber(""), currentBeginningPos(0)
 {
     initFile(filename);
+    resetReadPage();
+    resetWritePage();
 }
 
 Tape::~Tape()
@@ -70,6 +73,7 @@ void Tape::resetReadPage()
     {
         currentReadPage[i].setNumberString("");
     }
+    elementOnReadPage = pageSize;
 }
 
 Number Tape::readNextNumberAndDelete()
@@ -99,35 +103,27 @@ void Tape::deletePreviousRecords()
     currentBeginningPos = 0;
 }
 
-// ...existing code...
 bool Tape::isEmpty()
 {
-    // If we already have a current number -> not empty
     if (currentNumber.getNumberString() != "")
         return false;
-
-    // If there are unread numbers in the current read page -> not empty
     for (int i = elementOnReadPage; i < pageSize; ++i)
         if (currentReadPage[i].getNumberString() != "")
             return false;
-
-    // Probe the underlying file without consuming data:
     streampos pos = file.tellg();
-    // Ensure stream is ready for read attempt
-    file.clear();
-    string tmp;
+    file.clear(); // clear EOF/fail bits so we can try reading
+    std::string tmp;
     bool hasMore = static_cast<bool>(file >> tmp);
 
-    // restore stream state and position
+    // restore stream state/position
     file.clear();
-    if (pos != -1)
+    if (pos != static_cast<streampos>(-1))
         file.seekg(pos);
     else
-        file.seekg(0, ios::cur);
+        file.seekg(0, ios::beg);
 
     return !hasMore;
 }
-// ...existing code...
 
 void Tape::clearTape()
 {
@@ -170,27 +166,24 @@ void Tape::writeToPage(Number nmb)
     elementOnWritePage++;
 }
 
-
 void Tape::resetWritePage()
 {
-    for (int i=0; i<pageSize;i++)
+    for (int i = 0; i < pageSize; i++)
     {
         currentWritePage[i].setNumberString("");
     }
-    elementOnWritePage =0;
+    elementOnWritePage = 0;
 }
-
 
 void Tape::writePage()
 {
-    for (int i=0;i<pageSize;i++)
+    for (int i = 0; i < pageSize; i++)
     {
-        file << currentWritePage[i].getNumberString()<<endl;
+        file << currentWritePage[i].getNumberString() << endl;
     }
     file.flush();
     resetWritePage();
 }
-
 
 void Tape::printTape()
 {
@@ -209,10 +202,14 @@ void Tape::printTape()
 void Tape::resetToBeginning()
 {
     file.clear();
-    file.seekg(currentBeginningPos);
-    currentReadPos = currentBeginningPos;
-    resetReadPage(); resetWritePage();
-    file.seekp(0, ios::end);
+    file.seekg(0, ios::beg);
+    file.seekp(0, ios::beg);
+
+    currentBeginningPos = 0;
+    resetReadPage();
+    resetWritePage();
+    currentNumber.setNumberString("");
+    currentReadPos = 0;
 }
 
 void Tape::copyTapeTo(Tape *newTape)

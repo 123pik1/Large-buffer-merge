@@ -17,7 +17,6 @@ int saveCounter = 0;
 // zlicza odczyty
 int readCounter = 0;
 
-
 // TODO
 /*TODO
 - proper memory access counter
@@ -28,85 +27,8 @@ int readCounter = 0;
 */
 // TODO - change parsing input file to not count series
 
-bool isAuto = false;
-int iterationsToPause = 0;
-
-void printTapes(Tape **tapes)
-{
-    for (int i = 0; i < tapeNumber; i++)
-    {
-        tapes[i]->printTape();
-    }
-}
-
-void runPythonScript()
-{
-    int result = system("python3 data/generateData.py");
-    if (result != 0)
-        cout << "problem with script" << endl;
-}
-
-void addNumber(Tape &mainTape)
-{
-    string number;
-    cin >> number;
-    mainTape.appendNumber(Number(number));
-}
-
-void interMediateMenu(Tape **tapes)
-{
-    cout << "1. Auto\n\
-    2. Go n iteration in future\n\
-    3. Print tapes\n\
-    everything else: Continue"
-         << endl;
-    int option;
-    cin >> option;
-    switch (option)
-    {
-    case 1:
-        isAuto = true;
-        break;
-    case 2:
-        cin >> iterationsToPause;
-        break;
-    case 3:
-        printTapes(tapes);
-        break;
-    default:
-        break;
-    }
-}
-
-void entryMenu(Tape &mainTape)
-{
-    cout << "\
-    1. Auto\n\
-    2. Append number\n\
-    3. Generate Numbers\n\
-    4. Go n iterations in future\n\
-    everything else: Continue"
-         << endl;
-    int option;
-    cin >> option;
-    switch (option)
-    {
-    case 1:
-        isAuto = true;
-        break;
-    case 2:
-        addNumber(mainTape);
-        break;
-    case 3:
-        runPythonScript();
-        break;
-    case 4:
-        cin >> iterationsToPause;
-        break;
-    default:
-        break;
-    }
-}
+extern void interMediateMenu(Tape **tapes);
+extern void entryMenu(Tape &mainTape);
 
 void printTab(int *tab, int size)
 {
@@ -236,10 +158,8 @@ void merging(Tape **tapes, int idEmpty)
     {
         mergeOneRun(tapes, idEmpty);
         cout << "merge count: " << ++mergeCount << endl;
-        if (iterationsToPause > 0)
-            iterationsToPause--;
-        if (!isAuto && iterationsToPause == 0)
-            interMediateMenu(tapes);
+        
+        interMediateMenu(tapes);
     }
 }
 
@@ -283,7 +203,7 @@ int sort(Tape **tapes)
     cout << "posortowane" << endl;
     // sprawdza która taśma jest niepusta
     int nonEmpty = findNonEmpty(tapes);
-    cout << nonEmpty<<endl;
+    cout << nonEmpty << endl;
     return nonEmpty;
 }
 
@@ -374,12 +294,10 @@ void newMain()
         tapes[i]->clearTape();
     }
     prepareTapes(tapes);
-    tapes[0]->printTape();
-    cout<<"puste " << countEmpty(tapes)<<endl;
-    // int id = sort(tapes);
-    // Tape outputTape(outputFile);
-    // tapes[id]->copyTapeTo(&outputTape);
-    // outputTape.printTape();
+    int id = sort(tapes);
+    Tape outputTape(outputFile);
+    tapes[id]->copyTapeTo(&outputTape);
+    outputTape.printTape();
 }
 
 int main()
