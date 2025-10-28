@@ -32,12 +32,6 @@ extern void printTapes(Tape **tapes);
 extern void printTab(int *tab, int size);
 extern void printTab(bool *tab, int size);
 
-
-
-
-
-
-
 void newMain()
 {
     Tape *tapes[tapeNumber];

@@ -9,32 +9,38 @@
 #include "constants.h"
 using namespace std;
 
+extern void printTapes(Tape **tapes);
+extern void printTab(int *tab, int size);
 
 void parseInputFile(Tape **tapes)
 {
     Tape inputTape(inputFile);
     // entryMenu(inputTape);
-    cout << "Taśma wejściowa przeczytana" << endl;
-    // printTab(distribution, tapeNumber);
-    // inputTape.printTape(); //! wyświetlanie pliku przed sortowaniem
-    // cout << "fibbonaci zrobiony" << endl;
-    // cout << "pominelo ifa" << endl;
-    int targetTapes = (tapeNumber > 1) ? (tapeNumber - 1) : 1;
+    inputTape.printTape(); //! wyświetlanie pliku przed sortowaniem
+    int targetTapes = tapeNumber - 1;
     int currentTapeId = 0;
+    int runsOnTapes[tapeNumber];
+    for (int i = 0; i < tapeNumber; i++)
+    {
+        runsOnTapes[i] = 0;
+    }
+
+    unsigned long long fibPrev = 1;
+    unsigned long long fibCurr = 1;
 
     bool firstNumber = true;
     Number previousNmb, currentNumber;
-
-    // Stream input: read next number and append to current tape; when a number
-    // is lower than previous -> new run -> advance tape (round-robin).
+    // Używając Round-robin przechodzenie między dotępnymi taśmami i dodawanie rekordów do każdej z nich
+    // używając rozkładu fibbonaciego
     inputTape.readNextNumber();
     while (inputTape.getCurrentNumber().getNumberString() != "")
     {
         currentNumber = inputTape.getCurrentNumber();
-
+        cout << "current number " << currentNumber.getNumberString() << endl;
         if (firstNumber)
         {
             tapes[currentTapeId]->appendNumber(currentNumber);
+            runsOnTapes[currentTapeId] = 1;
             previousNmb = currentNumber;
             firstNumber = false;
         }
@@ -42,22 +48,31 @@ void parseInputFile(Tape **tapes)
         {
             if (currentNumber.isLowerThan(previousNmb))
             {
-                if (targetTapes > 1)
+
+                if (runsOnTapes[currentTapeId] >= fibCurr)
+                {
                     currentTapeId = (currentTapeId + 1) % targetTapes;
-                // if only one target tape, keep writing there
+                    unsigned long long fibNext = fibCurr + fibPrev;
+                    fibPrev = fibCurr;
+                    fibCurr = fibNext;
+                }
+                runsOnTapes[currentTapeId]++;
             }
             tapes[currentTapeId]->appendNumber(currentNumber);
             previousNmb = currentNumber;
         }
 
         inputTape.readNextNumber();
-        // cout << "taśmy zresetowane" << endl;
     }
     for (int i = 0; i < tapeNumber; i++)
     {
         tapes[i]->writePage();
         tapes[i]->resetToBeginning();
     }
+
+    printTapes(tapes);
+    cout << "tablica z seriami: " << endl;
+    printTab(runsOnTapes, tapeNumber);
 }
 
 void prepareTapes(Tape **tapes)

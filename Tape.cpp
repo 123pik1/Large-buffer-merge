@@ -188,6 +188,7 @@ void Tape::writePage()
 void Tape::printTape()
 {
     cout << "Wyświetlenie taśmy " << filename << endl;
+    file.clear();
     streampos temp = file.tellg();
     if (currentNumber.getNumberString() != "")
         cout << currentNumber.getNumberString() << endl;
@@ -195,6 +196,7 @@ void Tape::printTape()
     string nmb;
     while ((file >> nmb))
         cout << nmb << "\n";
+    file.clear();
     file.seekg(temp);
     file.clear();
 }
