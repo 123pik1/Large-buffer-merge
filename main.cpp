@@ -1,11 +1,10 @@
 #include <string>
 #include <iostream>
-#include <fstream>
 #include <vector>
 #include <cstdlib>
 #include "Tape.h"
-#include "Fibbonaci.h"
 #include "constants.h"
+#include "Parsing.h"
 using namespace std;
 
 // zlicza dostępy do pamięci
@@ -30,217 +29,14 @@ int readCounter = 0;
 extern void interMediateMenu(Tape **tapes);
 extern void entryMenu(Tape &mainTape);
 extern void printTapes(Tape **tapes);
+extern void printTab(int *tab, int size);
+extern void printTab(bool *tab, int size);
 
-void printTab(int *tab, int size)
-{
-    for (int i = 0; i < size; i++)
-    {
-        cout << tab[i] << " ";
-    }
-}
 
-int countEmpty(Tape **tapes)
-{
-    int emptyCount = 0;
-    for (int i = 0; i < tapeNumber; i++)
-    {
-        if (tapes[i]->isEmpty())
-        {
-            emptyCount++;
-        }
-    }
-    return emptyCount;
-}
 
-int findNonEmpty(Tape **tapes)
-{
-    for (int i = 0; i < tapeNumber; i++)
-    {
-        if (!tapes[i]->isEmpty())
-        {
-            cout << "niepusta znaleziona: " << i << endl;
-            return i;
-        }
-    }
-    return 0;
-}
 
-int findEmpty(Tape **tapes)
-{
-    for (int i = 0; i < tapeNumber; i++)
-    {
-        if (tapes[i]->isEmpty())
-        {
-            cout << "niepusta znaleziona: " << i << endl;
-            return i;
-        }
-    }
-    return -1;
-}
 
-int countNonEmpty(Tape **tapes)
-{
-    return tapeNumber - countEmpty(tapes);
-}
 
-int findMinimumAmongActive(Tape **tapes, int idEmpty, bool *tapeHasData)
-{
-    // id najmniejszej
-    int idLowest = -1;
-    for (int i = 0; i < tapeNumber; i++)
-    {
-
-        if (!tapeHasData[i])
-            // if (tapes[i]->isEmpty())
-            continue;
-
-        if (idLowest == -1 ||
-            tapes[i]->getCurrentNumber().isLowerThan(tapes[idLowest]->getCurrentNumber()))
-        {
-            idLowest = i;
-        }
-    }
-    return idLowest;
-}
-
-void mergeOneRun(Tape **tapes, int idEmpty)
-{
-    
-}
-
-void merging(Tape **tapes, int idEmpty)
-{
-    int mergeCount = 0;
-    while (countNonEmpty(tapes) >= 2)
-    {
-        mergeOneRun(tapes, idEmpty);
-        cout << "merge count: " << ++mergeCount << endl;
-        
-        interMediateMenu(tapes);
-    }
-}
-
-// zwraca id niepustej taśmy
-int sort(Tape **tapes)
-{
-    cout << "początek sortowania" << endl;
-    int iterations = 0;
-    // sortuje póki jest więcej niż jedna niepusta taśma
-    while (countNonEmpty(tapes) > 1)
-    {
-        cout << "iteracja sortowania " << (++iterations) << endl;
-        cout << "Non-empty tapes: " << countNonEmpty(tapes) << endl;
-
-        //
-        int idEmpty = findEmpty(tapes);
-
-        if (idEmpty == -1)
-        {
-            cout << "ERROR: No empty tape found!" << endl;
-            break;
-        }
-
-        // Reset all tapes to beginning
-        for (int i = 0; i < tapeNumber; i++)
-        {
-            tapes[i]->resetToBeginning();
-        }
-
-        cout << "pusta taśma znaleziona: " << idEmpty << endl;
-
-        // Merge phase
-        merging(tapes, idEmpty);
-
-        cout << "After merge phase:" << endl;
-        for (int i = 0; i < tapeNumber; i++)
-        {
-            cout << "Tape " << i << " empty: " << tapes[i]->isEmpty() << endl;
-        }
-    }
-    cout << "posortowane" << endl;
-    // sprawdza która taśma jest niepusta
-    int nonEmpty = findNonEmpty(tapes);
-    cout << nonEmpty << endl;
-    return nonEmpty;
-}
-
-// works
-int countSeries()
-{
-    Number actualNmb, previousNmb;
-    Tape mainFile(inputFile);
-    int series = 1;
-    mainFile.readNextNumber();
-    actualNmb = mainFile.getCurrentNumber();
-
-    do
-    {
-        previousNmb = actualNmb;
-        mainFile.readNextNumber();
-        if (mainFile.getCurrentNumber().getNumberString() == "")
-            break;
-        actualNmb = mainFile.getCurrentNumber();
-        if (actualNmb.isLowerThan(previousNmb))
-            series++;
-    } while (mainFile.getCurrentNumber().getNumberString() != "");
-
-    return series;
-}
-
-void parseInputFile(Tape **tapes)
-{
-    Tape inputTape(inputFile);
-    // entryMenu(inputTape);
-    cout << "Taśma wejściowa przeczytana" << endl;
-    // printTab(distribution, tapeNumber);
-    // inputTape.printTape(); //! wyświetlanie pliku przed sortowaniem
-    // cout << "fibbonaci zrobiony" << endl;
-    // cout << "pominelo ifa" << endl;
-    int targetTapes = (tapeNumber > 1) ? (tapeNumber - 1) : 1;
-    int currentTapeId = 0;
-
-    bool firstNumber = true;
-    Number previousNmb, currentNumber;
-
-    // Stream input: read next number and append to current tape; when a number
-    // is lower than previous -> new run -> advance tape (round-robin).
-    inputTape.readNextNumber();
-    while (inputTape.getCurrentNumber().getNumberString() != "")
-    {
-        currentNumber = inputTape.getCurrentNumber();
-
-        if (firstNumber)
-        {
-            tapes[currentTapeId]->appendNumber(currentNumber);
-            previousNmb = currentNumber;
-            firstNumber = false;
-        }
-        else
-        {
-            if (currentNumber.isLowerThan(previousNmb))
-            {
-                if (targetTapes > 1)
-                    currentTapeId = (currentTapeId + 1) % targetTapes;
-                // if only one target tape, keep writing there
-            }
-            tapes[currentTapeId]->appendNumber(currentNumber);
-            previousNmb = currentNumber;
-        }
-
-        inputTape.readNextNumber();
-        // cout << "taśmy zresetowane" << endl;
-    }
-    for (int i = 0; i < tapeNumber; i++)
-    {
-        tapes[i]->writePage();
-        tapes[i]->resetToBeginning();
-    }
-}
-
-void prepareTapes(Tape **tapes)
-{
-    parseInputFile(tapes);
-}
 
 void newMain()
 {
@@ -251,11 +47,13 @@ void newMain()
         tapes[i]->clearTape();
     }
     prepareTapes(tapes);
+    // mergeOneRun(tapes,2);
     // int id = sort(tapes);
     // Tape outputTape(outputFile);
     // tapes[id]->copyTapeTo(&outputTape);
+    // cout<<"id pustej "<<id<<endl;
     // outputTape.printTape();
-    printTapes(tapes);
+    // printTapes(tapes);
 }
 
 int main()

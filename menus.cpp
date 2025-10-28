@@ -90,3 +90,20 @@ void entryMenu(Tape &mainTape)
         break;
     }
 }
+
+void printTab(int *tab, int size)
+{
+    for (int i = 0; i < size; i++)
+    {
+        cout << tab[i] << " ";
+    }
+    cout << endl;
+}
+void printTab(bool *tab, int size)
+{
+    for (int i = 0; i < size; i++)
+    {
+        cout << (tab[i] ? 1 : 0) << " ";
+    }
+    cout << endl;
+}

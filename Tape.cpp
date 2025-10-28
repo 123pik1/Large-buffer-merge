@@ -16,7 +16,6 @@ Tape::~Tape()
     if (file.is_open())
     {
         file.close();
-        // remove(filename.c_str());
     }
 }
 
@@ -177,6 +176,7 @@ void Tape::resetWritePage()
 
 void Tape::writePage()
 {
+    writeCounter++;
     for (int i = 0; i < pageSize; i++)
     {
         file << currentWritePage[i].getNumberString() << endl;
