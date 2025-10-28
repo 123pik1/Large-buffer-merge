@@ -83,7 +83,6 @@ void mergeOneRun(Tape **tapes, int idEmpty)
     // 2. zapisanie mniejszej do pustej taśmy
     // 3. odczyt kolejnej liczby
     // 4. powrót do pierwszego póki jedna nie spuścieje
-
     while (true)
     {
         // punkt 1

@@ -42,7 +42,7 @@ void newMain()
         tapes[i]->clearTape();
     }
     prepareTapes(tapes);
-    // mergeOneRun(tapes,2);
+    mergeOneRun(tapes,2);
     // int id = sort(tapes);
     // Tape outputTape(outputFile);
     // tapes[id]->copyTapeTo(&outputTape);

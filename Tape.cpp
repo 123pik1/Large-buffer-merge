@@ -34,6 +34,7 @@ void Tape::initFile(string filename)
 // readPage liczy się jako jeden dostęp odczytu
 void Tape::readPage()
 {
+    resetReadPage();
     readCounter++;
     string newNumber = "";
     for (int i = 0; i < pageSize; i++)
@@ -77,8 +78,12 @@ void Tape::resetReadPage()
 
 Number Tape::readNextNumberAndDelete()
 {
-    currentNumber = readNextNumber();
+    if (elementOnReadPage < pageSize && currentReadPage[0].getNumberString() != "")
+    {
+        return getNextFromPage();
+    }
     deletePreviousRecords();
+    readPage();
     return currentNumber;
 }
 
