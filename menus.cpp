@@ -35,7 +35,7 @@ void interMediateMenu(Tape **tapes)
 {
     if (iterationsToPause > 0)
         iterationsToPause--;
-    if (iterationsToPause>0)
+    if (iterationsToPause>0 || isAuto)
         return;
     cout << "\
     1. Auto\n\
@@ -57,7 +57,7 @@ void interMediateMenu(Tape **tapes)
         printTapes(tapes);
         break;
     default:
-        break;
+        return;
     }
 }
 

@@ -29,6 +29,7 @@ int readCounter = 0;
 
 extern void interMediateMenu(Tape **tapes);
 extern void entryMenu(Tape &mainTape);
+extern void printTapes(Tape **tapes);
 
 void printTab(int *tab, int size)
 {
@@ -79,7 +80,6 @@ int findEmpty(Tape **tapes)
 
 int countNonEmpty(Tape **tapes)
 {
-    cout << "liczba niepustych:" << tapeNumber - countEmpty(tapes) << endl;
     return tapeNumber - countEmpty(tapes);
 }
 
@@ -105,50 +105,7 @@ int findMinimumAmongActive(Tape **tapes, int idEmpty, bool *tapeHasData)
 
 void mergeOneRun(Tape **tapes, int idEmpty)
 {
-    // czy run się skonczył na danej taśmie
-    bool tapeHasData[tapeNumber];
-    // ostatnia liczba zapisana z taśmy
-    Number lastFromTape[tapeNumber];
-
-    for (int i = 0; i < tapeNumber; i++)
-    {
-        tapeHasData[i] = !tapes[i]->isEmpty();
-    }
-
-    while (true)
-    {
-        // index najmniejszej liczby
-        int idLowest = findMinimumAmongActive(tapes, idEmpty, tapeHasData);
-        // brak najmniejszej liczby - wychodzi
-        if (idLowest == -1)
-            break;
-        // cout << tapes[idLowest]->getCurrentNumber().getNumberString() << endl;
-        Number current = tapes[idLowest]->getCurrentNumber();
-
-        tapes[idEmpty]->appendNumber(current);
-        lastFromTape[idLowest] = current; // zapisuje ostatni numer który został przekazany
-        tapes[idLowest]->readNextNumberAndDelete();
-
-        // sprawdzenie czy kolejna liczba jest mniejsza od obecnej
-        if (tapes[idLowest]->isEmpty() ||
-            lastFromTape[idLowest].isHigherThan(tapes[idLowest]->getCurrentNumber()))
-        {
-            tapeHasData[idLowest] = false;
-        }
-
-        // sprawdzenie czy wszystkie runy są skończone
-        bool anyTapeActive = false;
-        for (int i = 0; i < tapeNumber; i++)
-        {
-            if (tapeHasData[i])
-            {
-                anyTapeActive = true;
-                break;
-            }
-        }
-        if (!anyTapeActive)
-            break;
-    }
+    
 }
 
 void merging(Tape **tapes, int idEmpty)
@@ -294,10 +251,11 @@ void newMain()
         tapes[i]->clearTape();
     }
     prepareTapes(tapes);
-    int id = sort(tapes);
-    Tape outputTape(outputFile);
-    tapes[id]->copyTapeTo(&outputTape);
-    outputTape.printTape();
+    // int id = sort(tapes);
+    // Tape outputTape(outputFile);
+    // tapes[id]->copyTapeTo(&outputTape);
+    // outputTape.printTape();
+    printTapes(tapes);
 }
 
 int main()
