@@ -5,6 +5,7 @@
 #include "Tape.h"
 #include "constants.h"
 #include "Parsing.h"
+#include "Sorting.h"
 using namespace std;
 
 // zlicza dostępy do pamięci

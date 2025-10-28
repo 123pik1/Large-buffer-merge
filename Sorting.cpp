@@ -7,6 +7,9 @@
 #include "constants.h"
 using namespace std;
 
+extern void printTapes(Tape **tapes);
+
+
 int countEmpty(Tape **tapes)
 {
     int emptyCount = 0;
@@ -51,14 +54,14 @@ int countNonEmpty(Tape **tapes)
     return tapeNumber - countEmpty(tapes);
 }
 
-int findMinimumAmongActive(Tape **tapes, int idEmpty, bool *tapeHasData)
+int findMinimumAmongActive(Tape **tapes, int idEmpty)
 {
     // id najmniejszej
     int idLowest = -1;
     for (int i = 0; i < tapeNumber; i++)
     {
 
-        if (!tapeHasData[i])
+        if (i==idEmpty)
             // if (tapes[i]->isEmpty())
             continue;
 
@@ -71,15 +74,58 @@ int findMinimumAmongActive(Tape **tapes, int idEmpty, bool *tapeHasData)
     return idLowest;
 }
 
+//TODO jak nie bedzie działa to sprawdzić odczyt i zapis
+
+
 void mergeOneRun(Tape **tapes, int idEmpty)
 {
-}
+    // 1. porównanie dwóch liczb
+    // 2. zapisanie mniejszej do pustej taśmy
+    // 3. odczyt kolejnej liczby
+    // 4. powrót do pierwszego póki jedna nie spuścieje
 
-void merging(Tape **tapes, int idEmpty)
+    while (true)
+    {
+        // punkt 1
+        int idOfMin = findMinimumAmongActive(tapes,idEmpty);
+        // punkt 2
+        tapes[idEmpty]->appendNumber(tapes[idOfMin]->getCurrentNumber());
+        // punkt 3
+        tapes[idOfMin]->readNextNumberAndDelete();
+        // punkt 4
+        if (tapes[idOfMin]->isEmpty())
+        {
+            tapes[idOfMin]->writePage();
+            break;
+        }
+    }
+    printTapes(tapes);
+    cout << "tasma 0 " << tapes[0]->getCurrentNumber().getNumberString() << endl;
+    cout<<"tasma 1 "<<tapes[1]->getCurrentNumber().getNumberString()<<endl;
+    cout << "tasma 2 " << tapes[2]->getCurrentNumber().getNumberString() << endl;
+}
+void merging(Tape **tapes)
 {
     int mergeCount = 0;
     while (countNonEmpty(tapes) >= 2)
     {
+        int idEmpty = findEmpty(tapes);
+
+        if (idEmpty == -1)
+        {
+            cout << "ERROR: No empty tape found!" << endl;
+            break;
+        }
+
+        // Reset all tapes to beginning
+        for (int i = 0; i < tapeNumber; i++)
+        {
+            tapes[i]->resetToBeginning();
+        }
+
+        cout << "pusta taśma znaleziona: " << idEmpty << endl;
+
+        // Merge phase
         mergeOneRun(tapes, idEmpty);
         cout << "merge count: " << ++mergeCount << endl;
 
@@ -99,24 +145,7 @@ int sort(Tape **tapes)
         cout << "Non-empty tapes: " << countNonEmpty(tapes) << endl;
 
         //
-        int idEmpty = findEmpty(tapes);
-
-        if (idEmpty == -1)
-        {
-            cout << "ERROR: No empty tape found!" << endl;
-            break;
-        }
-
-        // Reset all tapes to beginning
-        for (int i = 0; i < tapeNumber; i++)
-        {
-            tapes[i]->resetToBeginning();
-        }
-
-        cout << "pusta taśma znaleziona: " << idEmpty << endl;
-
-        // Merge phase
-        merging(tapes, idEmpty);
+        merging(tapes);
 
         cout << "After merge phase:" << endl;
         for (int i = 0; i < tapeNumber; i++)

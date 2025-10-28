@@ -1,5 +1,4 @@
 #include "Parsing.h"
-#include "Fibbonaci.h"
 #include <string>
 #include <iostream>
 #include <fstream>
@@ -36,7 +35,7 @@ void parseInputFile(Tape **tapes)
     while (inputTape.getCurrentNumber().getNumberString() != "")
     {
         currentNumber = inputTape.getCurrentNumber();
-        cout << "current number " << currentNumber.getNumberString() << endl;
+        // cout << "current number " << currentNumber.getNumberString() << endl;
         if (firstNumber)
         {
             tapes[currentTapeId]->appendNumber(currentNumber);
@@ -71,8 +70,8 @@ void parseInputFile(Tape **tapes)
     }
 
     printTapes(tapes);
-    cout << "tablica z seriami: " << endl;
-    printTab(runsOnTapes, tapeNumber);
+    // cout << "tablica z seriami: " << endl;
+    // printTab(runsOnTapes, tapeNumber);
 }
 
 void prepareTapes(Tape **tapes)
