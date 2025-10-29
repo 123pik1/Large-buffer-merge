@@ -232,20 +232,21 @@ void Tape::resetToBeginning()
     currentReadPos = 0;
 }
 
+// copies only file content, ignores write and read pages - be aware
 void Tape::copyTapeTo(Tape *newTape)
 {
-    streampos originalPos = file.tellg();
+    resetToBeginning();
     newTape->clearTape();
-    Number nmb;
-    if (currentNumber.getNumberString() != "")
-        newTape->appendNumber(currentNumber);
-    file.seekg(currentBeginningPos);
-    string nmbStr;
-    while (file >> nmbStr)
+
+    newTape->file.clear();
+    newTape->file.seekp(0, ios::beg);
+
+    string line;
+    while (getline(file, line))
     {
-        nmb.setNumberString(nmbStr);
-        newTape->appendNumber(nmb);
+        newTape->file<<line<<"\n";
     }
-    file.clear();
-    file.seekg(originalPos);
+    newTape->file.flush();
+    resetToBeginning();
+    newTape->resetToBeginning();
 }

@@ -108,6 +108,7 @@ void mergeOneRun(Tape **tapes, int idEmpty)
     cout<<"tasma 1 "<<tapes[1]->getCurrentNumber().getNumberString()<<endl;
     cout << "tasma 2 " << tapes[2]->getCurrentNumber().getNumberString() << endl;
 }
+
 void merging(Tape **tapes)
 {
     int mergeCount = 0;
