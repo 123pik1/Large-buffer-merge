@@ -87,8 +87,12 @@ void mergeOneRun(Tape **tapes, int idEmpty)
     {
         // punkt 1
         int idOfMin = findMinimumAmongActive(tapes,idEmpty);
+        if (idOfMin==-1)
+            break;
+        Number minNumber = tapes[idOfMin]->getCurrentNumber();
+        cout<<"Minimal number "<<minNumber.getNumberString()<<endl;
         // punkt 2
-        tapes[idEmpty]->appendNumber(tapes[idOfMin]->getCurrentNumber());
+        tapes[idEmpty]->appendNumber(minNumber);
         // punkt 3
         tapes[idOfMin]->readNextNumberAndDelete();
         // punkt 4
@@ -98,6 +102,7 @@ void mergeOneRun(Tape **tapes, int idEmpty)
             break;
         }
     }
+    tapes[idEmpty]->writePage();
     printTapes(tapes);
     cout << "tasma 0 " << tapes[0]->getCurrentNumber().getNumberString() << endl;
     cout<<"tasma 1 "<<tapes[1]->getCurrentNumber().getNumberString()<<endl;

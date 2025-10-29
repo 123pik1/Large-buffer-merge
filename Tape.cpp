@@ -78,23 +78,35 @@ void Tape::resetReadPage()
 
 Number Tape::readNextNumberAndDelete()
 {
-    if (elementOnReadPage < pageSize && currentReadPage[0].getNumberString() != "")
+    if (elementOnReadPage < pageSize && currentReadPage[elementOnReadPage].getNumberString() != "")
     {
-        return getNextFromPage();
+        Number nextNumber = getNextFromPage();
+
+        if (elementOnReadPage == pageSize)
+        {
+            deletePreviousRecords();
+            readPage();
+        }
+
+        return nextNumber;
     }
+    // strona już pusta - czyta nową
     deletePreviousRecords();
     readPage();
-    return currentNumber;
+    return getNextFromPage();
 }
 
-//? maybe change to not deleting phisically but only logically
-// by additional variable
+// usuwa rekordy przez skopiowanie pozostałych do innego pliku
+// następnie zamienia pliki miejscami
 void Tape::deletePreviousRecords()
 {
     string rest;
     ofstream temp(tempTapeLocation);
+
+
     while (file >> rest)
         temp << rest << "\n";
+
     file.close();
     temp.close();
 
@@ -103,6 +115,7 @@ void Tape::deletePreviousRecords()
 
     file.open(filename, std::ios::in | std::ios::out);
     file.clear();
+    resetReadPage();
     currentReadPos = 0;
     currentBeginningPos = 0;
 }
@@ -151,7 +164,7 @@ Number Tape::getCurrentNumber()
 
 void Tape::appendNumber(Number nmb)
 {
-    // cout << "appenduje liczbe: " << nmb.getNumberString() << endl;
+    cout << "appenduje liczbe: " << nmb.getNumberString() << endl;
     file.clear();
     file.seekp(0, ios::end);
 

@@ -43,7 +43,8 @@ void newMain()
     }
     prepareTapes(tapes);
     mergeOneRun(tapes,2);
-    // int id = sort(tapes);
+    int id = sort(tapes);
+    cout << "id niepustej "<<id<<endl;
     // Tape outputTape(outputFile);
     // tapes[id]->copyTapeTo(&outputTape);
     // cout<<"id pustej "<<id<<endl;
