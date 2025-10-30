@@ -78,7 +78,7 @@ void Tape::resetReadPage()
 
 Number Tape::readNextNumberAndDelete()
 {
-    if (elementOnReadPage < pageSize && currentReadPage[elementOnReadPage].getNumberString() != "")
+    if (elementOnReadPage < pageSize)
     {
         Number nextNumber = getNextFromPage();
 
@@ -91,6 +91,7 @@ Number Tape::readNextNumberAndDelete()
         return nextNumber;
     }
     // strona już pusta - czyta nową
+    resetReadPage();
     deletePreviousRecords();
     readPage();
     return getNextFromPage();
@@ -115,7 +116,6 @@ void Tape::deletePreviousRecords()
 
     file.open(filename, std::ios::in | std::ios::out);
     file.clear();
-    resetReadPage();
     currentReadPos = 0;
     currentBeginningPos = 0;
 }
@@ -124,7 +124,12 @@ bool Tape::isEmpty()
 {
     if (currentNumber.getNumberString() != "")
         return false;
-    for (int i = elementOnReadPage; i < pageSize; ++i)
+    for (int i=0;i<pageSize;i++)
+    {
+        if (currentWritePage[i].getNumberString()!="")
+            return false;
+    }
+    for (int i = 0; i < pageSize; ++i)
         if (currentReadPage[i].getNumberString() != "")
             return false;
     streampos pos = file.tellg();
@@ -164,7 +169,6 @@ Number Tape::getCurrentNumber()
 
 void Tape::appendNumber(Number nmb)
 {
-    cout << "appenduje liczbe: " << nmb.getNumberString() << endl;
     file.clear();
     file.seekp(0, ios::end);
 

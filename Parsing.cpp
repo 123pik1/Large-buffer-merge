@@ -11,11 +11,25 @@ using namespace std;
 extern void printTapes(Tape **tapes);
 extern void printTab(int *tab, int size);
 
+
+// 1. inicjuje inputTape
+// 2. tworzy tablicę zliczającą runy na każdej taśmie
+// 3. inicjuje Fibbonaciego
+// 4. Zczytuje pierwszy numer z inputu
+// 5. ustawia tapeID na początkowe (0) i wstawia tam pierwszą liczbę z inputu
+// 6. dla każdej kolejnej liczby:
+// 6.1 sprawdza czy obecny numer jest mniejszy od poprzedniego (nowy run)
+// 6.1.1 Jeżeli tak: sprawdza czy obecna liczba runów przekroczyła max na daną taśmę
+// 6.1.1.1 Jeżeli tak: przechodzi do kolejnej taśmy, zwiększa fibbonaci current
+// 6.1.2 zwiększa liczbę runów na obecnej taśmie
+// 6.2 czyta kolejną liczbę
+// 7. dopisuje strony do końca i resetuje taśmy
+// 8. wyświetla wszystkie taśmy
 void parseInputFile(Tape **tapes)
 {
     Tape inputTape(inputFile);
     // entryMenu(inputTape);
-    inputTape.printTape(); //! wyświetlanie pliku przed sortowaniem
+    inputTape.printTape();
     int targetTapes = tapeNumber - 1;
     int currentTapeId = 0;
     int runsOnTapes[tapeNumber];
@@ -35,7 +49,6 @@ void parseInputFile(Tape **tapes)
     while (inputTape.getCurrentNumber().getNumberString() != "")
     {
         currentNumber = inputTape.getCurrentNumber();
-        // cout << "current number " << currentNumber.getNumberString() << endl;
         if (firstNumber)
         {
             tapes[currentTapeId]->appendNumber(currentNumber);
@@ -47,7 +60,6 @@ void parseInputFile(Tape **tapes)
         {
             if (currentNumber.isLowerThan(previousNmb))
             {
-
                 if (runsOnTapes[currentTapeId] >= fibCurr)
                 {
                     currentTapeId = (currentTapeId + 1) % targetTapes;
@@ -70,8 +82,6 @@ void parseInputFile(Tape **tapes)
     }
 
     printTapes(tapes);
-    // cout << "tablica z seriami: " << endl;
-    // printTab(runsOnTapes, tapeNumber);
 }
 
 void prepareTapes(Tape **tapes)
