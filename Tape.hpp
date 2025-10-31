@@ -1,0 +1,6 @@
+class Number;
+
+class Tape
+{
+
+};
