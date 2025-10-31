@@ -77,16 +77,21 @@ int findMinimumAmongActive(Tape **tapes, int idEmpty, bool* isActive)
 }
 
 // 1. Inicjuje tablicę zawierającą informację czy dana taśma ma aktywny run
-// 2. porównanie dwóch liczb
+// 2. porównanie liczb z każdej z taśm
 // 3. zapisanie mniejszej do pustej taśmy
 // 4. odczyt kolejnej liczby
-// 5. powrót do pierwszego póki: poprzedni nie jest większy od obecnej liczby
+// 5. Porównanie nowej odczytanej liczby z wcześniejszą z taśmy z minimalną wartością (porównuje wewnątrz taśmy),
+// jeżeli nowa liczba jest mniejsza -> deaktywacja taśmy
+// 6. powrót do 2
+// Przerwanie gdy wszystkie taśmy są nieaktywne
 void mergeOneRun(Tape **tapes, int idEmpty)
 {
     // punkt 1
     bool activeTapes[tapeNumber];
     for (int i=0; i<tapeNumber;i++)
         activeTapes[i] = (i!=idEmpty && !tapes[i]->isEmpty());
+
+    Number prevNumbers[tapeNumber];
 
     while (true)
     {
@@ -107,13 +112,17 @@ void mergeOneRun(Tape **tapes, int idEmpty)
         tapes[idOfMin]->readNextNumberAndDelete();
         cout << "Curr: " << tapes[idOfMin]->getCurrentNumber().getNumberString() << endl;
         // punkt 5
-        if (tapes[idOfMin]->isEmpty() || tapes[idOfMin]->getCurrentNumber().isLowerThan(prev))
+        if (tapes[idOfMin]->isEmpty())
         {
             activeTapes[idOfMin] = false;
-            cout << "Deactivating tape " << idOfMin << endl;
+            cout << "Tape " << idOfMin << " exhausted, deactivating." << endl;
+        }
+        else if (tapes[idOfMin]->getCurrentNumber().isLowerThan(prev))
+        {
+            activeTapes[idOfMin] = false;
+            cout << "Run ended on tape " << idOfMin << ", deactivating." << endl;
         }
     }
-    tapes[idEmpty]->writePage();
 }
 
 
@@ -125,33 +134,33 @@ void mergeOneRun(Tape **tapes, int idEmpty)
 // 5. Powtarza merge póki inna nie spuścieje
 void merging(Tape **tapes, int idEmpty)
 {
-    cout <<"in merging"<<endl;
-    int mergeCount = 0;
-    while (tapes[idEmpty]->isEmpty() || findEmpty(tapes)==-1)
+
+    
+    cout << "Starting merge phase on tape " << idEmpty << endl;
+
+    // Merge runs until one of the source tapes is empty
+    while (countNonEmpty(tapes) > 1)
     {
-        cout << "in merge while beginning "<<endl;
-        
-
-
-        // Merge phase
+        cout << "Merging one run to tape " << idEmpty << endl;
         mergeOneRun(tapes, idEmpty);
-        cout << "pierwszy run się zrobił "<<endl;
-        printTapes(tapes);
-        //!
-        // TODO blocking on the same run
-        //!
-        // while (findEmpty(tapes)==-1 && !tapes[idEmpty]->isEmpty())
-        // {
-        //     mergeOneRun(tapes, idEmpty);
-        // }
-        // it should not cross that point if 
 
+        // Check if any source tape became empty
+        bool sourceEmpty = false;
+        for (int i = 0; i < tapeNumber; i++)
+        {
+            if (i != idEmpty && tapes[i]->isEmpty())
+            {
+                sourceEmpty = true;
+                cout << "Source tape " << i << " is now empty." << endl;
+                break;
+            }
+        }
 
-
-        // interMediateMenu(tapes);
     }
-    cout << "merge count: " << ++mergeCount << endl;
-    cout<<"Empty tapes: "<<countEmpty(tapes)<<endl;
+
+    // Flush output tape
+    tapes[idEmpty]->writePage();
+    cout << "Merge phase complete." << endl;
 }
 
 

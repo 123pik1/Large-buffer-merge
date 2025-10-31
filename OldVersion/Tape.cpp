@@ -104,7 +104,6 @@ void Tape::deletePreviousRecords()
     string rest;
     ofstream temp(tempTapeLocation);
 
-
     while (file >> rest)
         temp << rest << "\n";
 
@@ -124,15 +123,16 @@ bool Tape::isEmpty()
 {
     if (currentNumber.getNumberString() != "")
         return false;
-    for (int i=0;i<pageSize;i++)
+    for (int i = 0; i < pageSize; i++)
     {
-        if (currentWritePage[i].getNumberString()!="")
+        if (currentWritePage[i].getNumberString() != "")
             return false;
     }
     for (int i = 0; i < pageSize; ++i)
         if (currentReadPage[i].getNumberString() != "")
             return false;
     streampos pos = file.tellg();
+    file.seekg(currentBeginningPos);
     file.clear(); // clear EOF/fail bits so we can try reading
     std::string tmp;
     bool hasMore = static_cast<bool>(file >> tmp);
@@ -201,7 +201,8 @@ void Tape::writePage()
     writeCounter++;
     for (int i = 0; i < pageSize; i++)
     {
-        file << currentWritePage[i].getNumberString() << endl;
+        if (currentWritePage[i].getNumberString() != "")
+            file << currentWritePage[i].getNumberString() << endl;
     }
     file.flush();
     resetWritePage();
@@ -248,7 +249,7 @@ void Tape::copyTapeTo(Tape *newTape)
     string line;
     while (getline(file, line))
     {
-        newTape->file<<line<<"\n";
+        newTape->file << line << "\n";
     }
     newTape->file.flush();
     resetToBeginning();
