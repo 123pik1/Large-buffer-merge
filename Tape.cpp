@@ -98,7 +98,16 @@ void Tape::appendNumber(Number nmb)
 
 bool Tape::isEmpty()
 {
-    return empty;
+    if (empty) return true;
+    for (auto i : readPageTab)
+    {
+        if (!i.isEmpty()) return false;
+    }
+    streampos currPos = file.tellg();
+    file.seekg(0, std::ios::end);
+    std::streampos endPos = file.tellg();
+    file.seekg(currPos);
+    return endPos <=beginningPos;
 }
 
 void Tape::goToBegin()
