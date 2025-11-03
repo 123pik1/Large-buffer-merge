@@ -32,6 +32,10 @@ public:
     bool isHigherThan(Number nmb);
     bool isLowerThan(Number nmb);
     void setNumberString(std::string nmb);
+    bool isEmpty()
+    {
+        return numberString=="";
+    }
     std::string getNumberString()
     {
         return numberString;
