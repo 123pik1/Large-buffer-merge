@@ -1,4 +1,4 @@
-#include "Number.h"
+#include "Number.hpp"
 #include <vector>
 #include <random>
 using namespace std;
