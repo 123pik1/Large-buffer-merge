@@ -1,4 +1,5 @@
 #include "Tape.hpp"
+#include <iostream>
 using namespace std;
 
 // konieczne dla algorytmu
@@ -10,6 +11,7 @@ Tape::Tape(string filename) : filename(filename), currNmb(""),beginningPos(0)
 
 Tape::~Tape()
 {
+    writePage();
     if (file.is_open())
     {
         file.close();
@@ -18,6 +20,7 @@ Tape::~Tape()
 
 void Tape::readPage()
 {
+    resetReadPage();
     string nmb;
     file.seekg(beginningPos);
     for (int i=0; i<pageSize; i++)
@@ -76,6 +79,7 @@ void Tape::writePage()
     }
     writeCounter++;
     elementOnWritePage=0;
+    resetWritePage();
 }
 
 void Tape::appendNumber(Number nmb)
@@ -101,11 +105,21 @@ void Tape::goToBegin()
 }
 
 // debugowanie + wymogi zadania
-//TODO
 void Tape::printTape()
 {
     file.seekg(beginningPos);
-    
+    cout << "wyswietlanie tasmy "<<filename<<endl;
+    file.clear();
+    if (!currNmb.isEmpty())
+        cout << currNmb.getNumberString()<<endl;
+    for (int i=elementOnReadPage;i<pageSize;i++)
+        cout << readPageTab[i].getNumberString() << endl;
+    string nmb;
+    while (file>>nmb)
+        cout <<nmb<<endl;
+    file.clear();
+    file.seekg(beginningPos);
+
 }
 
 void Tape::deletePrevRecords()
@@ -126,4 +140,22 @@ void Tape::initFile()
         createFile.close();
         file.open(filename, ios::in | ios::out);
     }
+}
+
+void Tape::resetWritePage()
+{
+    for (int i=0; i<pageSize;i++)
+    {
+        writePageTab[i]=Number("");
+    }
+    elementOnWritePage = pageSize;
+}
+
+void Tape::resetReadPage()
+{
+    for (int i = 0; i < pageSize; i++)
+    {
+        readPageTab[i] = Number("");
+    }
+    elementOnReadPage = pageSize;
 }

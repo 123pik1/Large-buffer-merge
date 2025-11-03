@@ -54,4 +54,6 @@ public:
 private:
     // metody pomocnicze
     void initFile();
+    void resetReadPage();
+    void resetWritePage();
 };
