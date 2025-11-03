@@ -3,15 +3,15 @@
 using namespace std;
 
 // konieczne dla algorytmu
-Tape::Tape(string filename) : filename(filename), currNmb(""),beginningPos(0)
+Tape::Tape(string filename) : filename(filename), currNmb(""), beginningPos(0)
 {
     initFile();
-    readPage();
 }
 
 Tape::~Tape()
 {
-    writePage();
+    if (elementOnWritePage > 0)
+        writePage();
     if (file.is_open())
     {
         file.close();
@@ -23,16 +23,16 @@ void Tape::readPage()
     resetReadPage();
     string nmb;
     file.seekg(beginningPos);
-    for (int i=0; i<pageSize; i++)
+    for (int i = 0; i < pageSize; i++)
     {
-        if (file>>nmb)
+        if (file >> nmb)
         {
-            empty=false;
+            empty = false;
             Number number(nmb);
-            readPageTab[i]=number;
-            beginningPos=file.tellg();
+            readPageTab[i] = number;
+            beginningPos = file.tellg();
         }
-        else if (i==0)
+        else if (i == 0)
         {
             empty = true;
             break;
@@ -54,7 +54,7 @@ void Tape::readNextNumber()
 
 Number Tape::getCurrNumber()
 {
-    if (currNmb.getNumberString()=="")
+    if (currNmb.getNumberString() == "")
         readNextNumber();
     return currNmb;
 }
@@ -66,31 +66,35 @@ void Tape::resetTape()
     file.seekp(0, ios::end);
 }
 
-
 void Tape::writePage()
 {
-    for (int i=0; i<pageSize;i++)
+    file.clear();
+    file.seekp(0, ios::end);
+    for (int i = 0; i < pageSize; i++)
     {
-        if (writePageTab[i].getNumberString()!="")
+        if (!writePageTab[i].isEmpty())
         {
-            empty=false;
             file << writePageTab[i].getNumberString() << endl;
+            empty = false;
         }
     }
     writeCounter++;
-    elementOnWritePage=0;
+    elementOnWritePage = 0;
+    file.flush();
     resetWritePage();
 }
 
 void Tape::appendNumber(Number nmb)
 {
-    if (nmb.getNumberString()!="")
+    cout << "Appending number " << nmb.getNumberString() << endl;
+    if (nmb.getNumberString() != "")
         empty = false;
-    if (elementOnWritePage>=pageSize)
+    if (elementOnWritePage >= pageSize)
     {
         writePage();
     }
-    writePageTab[elementOnWritePage]=nmb;
+    writePageTab[elementOnWritePage] = nmb;
+    cout << "na writePage " << writePageTab[elementOnWritePage].getNumberString() << endl;
     elementOnWritePage++;
 }
 
@@ -108,31 +112,47 @@ void Tape::goToBegin()
 void Tape::printTape()
 {
     file.seekg(beginningPos);
-    cout << "wyswietlanie tasmy "<<filename<<endl;
+    cout << "wyswietlanie tasmy " << filename << endl;
     file.clear();
     if (!currNmb.isEmpty())
-        cout << currNmb.getNumberString()<<endl;
-    for (int i=elementOnReadPage;i<pageSize;i++)
+        cout << currNmb.getNumberString() << endl;
+    for (int i = elementOnReadPage; i < pageSize; i++)
         cout << readPageTab[i].getNumberString() << endl;
     string nmb;
-    while (file>>nmb)
-        cout <<nmb<<endl;
+    while (file >> nmb)
+        cout << nmb << endl;
     file.clear();
     file.seekg(beginningPos);
-
 }
 
 void Tape::deletePrevRecords()
 {
-    
+    ofstream tempFile(tempTapeLocation);
+    string nmb;
+    file.seekg(beginningPos);
+    while (file>>nmb)
+    {
+        tempFile<<nmb<<endl;
+    }
+    //TODO
+    file.close();
+    tempFile.close();
+    remove(filename.c_str());
+    rename(tempTapeLocation, filename.c_str());
+    resetTape();
 }
 
+void Tape::clearTape()
+{
+    file.close();
+    remove(filename.c_str());
+    initFile();
+}
 
 // pomocnicze
 
 void Tape::initFile()
 {
-    // Opens stream to file, if there is no file, creates it
     file.open(filename, ios::in | ios::out);
     if (!file.is_open())
     {
@@ -144,18 +164,18 @@ void Tape::initFile()
 
 void Tape::resetWritePage()
 {
-    for (int i=0; i<pageSize;i++)
+    for (int i = 0; i < pageSize; i++)
     {
-        writePageTab[i]=Number("");
+        writePageTab[i].setNumberString("");
     }
-    elementOnWritePage = pageSize;
+    elementOnWritePage = 0;
 }
 
 void Tape::resetReadPage()
 {
     for (int i = 0; i < pageSize; i++)
     {
-        readPageTab[i] = Number("");
+        readPageTab[i].setNumberString("");
     }
     elementOnReadPage = pageSize;
 }

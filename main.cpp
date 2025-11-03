@@ -10,12 +10,17 @@ int main()
     input.readNextNumber();
 
     cout << input.getCurrNumber().getNumberString()<<endl;
-    input.printTape();
     input.readNextNumber();
     cout << input.getCurrNumber().getNumberString() << endl;
 
     Tape out(OutputFile);
+    out.clearTape();
     out.appendNumber(input.getCurrNumber());
+    input.deletePrevRecords();
+
+
+
+    // out.printTape();
     // PolyphaseSort poly;
     // poly.sort(InputFile, OutputFile);
 

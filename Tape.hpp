@@ -46,7 +46,7 @@ public:
     bool isEmpty();
     void goToBegin();
     void deletePrevRecords();
-
+    void clearTape();
 
     // debugowanie + wymogi zadania
     void printTape();
