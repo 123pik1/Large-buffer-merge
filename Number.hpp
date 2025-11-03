@@ -13,15 +13,15 @@ class Number
     };
 
     // if nmb1 higher -> HIGHER, nmb2 higher -> LOWER, else EQUAL
-    ComparisonResult compareIntegers(std::string nmb1, std::string nmb2);
+    ComparisonResult compareIntegers(std::string nmb1, std::string nmb2) const;
     // if nmb1 higher -> HIGHER, nmb2 higher -> LOWER, else EQUAL
-    ComparisonResult compareFloats(std::string nmb1, std::string nmb2);
+    ComparisonResult compareFloats(std::string nmb1, std::string nmb2) const;
     // if nmb1 higher -> HIGHER, nmb2 higher -> LOWER, else EQUAL
     // Does not check the number of digits
-    ComparisonResult compareDigitAfterDigit(std::string nmb1, std::string nmb2);
+    ComparisonResult compareDigitAfterDigit(std::string nmb1, std::string nmb2) const;
     void setInteger();
     void setNegative();
-    ComparisonResult isWhatTo(Number nmb);
+    ComparisonResult isWhatTo(Number nmb) const;
 public:
     Number();
     Number(std::string number);
@@ -29,8 +29,8 @@ public:
     bool isNegative = false;
 
     // If false nmb is higher or equal, if true nmb is lower
-    bool isHigherThan(Number nmb);
-    bool isLowerThan(Number nmb);
+    bool isHigherThan(Number nmb) const;
+    bool isLowerThan(Number nmb) const;
     void setNumberString(std::string nmb);
     bool isEmpty()
     {
@@ -43,6 +43,15 @@ public:
     std::string to_string()
     {
         return numberString;
+    }
+
+    bool operator<(const Number& other) const
+    {
+        return other.isHigherThan(*this);
+    }
+    bool operator>(const Number& other) const
+    {
+        return other.isLowerThan(*this);
     }
 
 };

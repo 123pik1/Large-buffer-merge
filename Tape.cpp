@@ -86,7 +86,6 @@ void Tape::writePage()
 
 void Tape::appendNumber(Number nmb)
 {
-    cout << "Appending number " << nmb.getNumberString() << endl;
     if (nmb.getNumberString() != "")
         empty = false;
     if (elementOnWritePage >= pageSize)
@@ -94,7 +93,6 @@ void Tape::appendNumber(Number nmb)
         writePage();
     }
     writePageTab[elementOnWritePage] = nmb;
-    cout << "na writePage " << writePageTab[elementOnWritePage].getNumberString() << endl;
     elementOnWritePage++;
 }
 

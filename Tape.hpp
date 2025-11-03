@@ -50,6 +50,10 @@ public:
 
     // debugowanie + wymogi zadania
     void printTape();
+    std::string getFilename()
+    {
+        return filename;
+    }
 
 private:
     // metody pomocnicze

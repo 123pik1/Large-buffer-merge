@@ -4,7 +4,7 @@
 using namespace std;
 
 
-Number::ComparisonResult Number::isWhatTo(Number nmb)
+Number::ComparisonResult Number::isWhatTo(Number nmb) const
 {
     if (!this->isInteger && nmb.isInteger)
         return LOWER; // float is lower than integer
@@ -30,17 +30,17 @@ Number::ComparisonResult Number::isWhatTo(Number nmb)
         return res;
 }
 
-bool Number::isHigherThan(Number nmb)
+bool Number::isHigherThan(Number nmb) const
 {
     return (isWhatTo(nmb) == HIGHER);
 }
 
-bool Number::isLowerThan(Number nmb)
+bool Number::isLowerThan(Number nmb) const
 {
     return (isWhatTo(nmb) == LOWER);
 }
 
-Number::ComparisonResult Number::compareIntegers(string nmb1, string nmb2)
+Number::ComparisonResult Number::compareIntegers(string nmb1, string nmb2) const
 {
     string clean1 = (nmb1[0] == '-') ? nmb1.substr(1) : nmb1;
     string clean2 = (nmb2[0] == '-') ? nmb2.substr(1) : nmb2;
@@ -51,7 +51,7 @@ Number::ComparisonResult Number::compareIntegers(string nmb1, string nmb2)
     return compareDigitAfterDigit(clean1, clean2);
 }
 
-Number::ComparisonResult Number::compareFloats(string nmb1, string nmb2)
+Number::ComparisonResult Number::compareFloats(string nmb1, string nmb2) const
 {
     string temp1, temp2;
     // Extracting substring from the beginning to "."
@@ -68,7 +68,7 @@ Number::ComparisonResult Number::compareFloats(string nmb1, string nmb2)
     return compareDigitAfterDigit(temp1, temp2);
 }
 
-Number::ComparisonResult Number::compareDigitAfterDigit(string nmb1, string nmb2)
+Number::ComparisonResult Number::compareDigitAfterDigit(string nmb1, string nmb2) const
 {
     char digit1, digit2;
     for (int i = 0; i < nmb1.length() && i < nmb2.length(); i++)
