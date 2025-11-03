@@ -20,6 +20,7 @@ private:
     void copyToOutput();
 
     int findEmpty();
+    void mergeOneRun(int destIndex, std::vector<Tape *> sources);
 public:
     PolyphaseSort(int numTapes, const std::string &inputFile, const std::string &outputFile);
     ~PolyphaseSort();

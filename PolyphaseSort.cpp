@@ -3,13 +3,12 @@
 #include <algorithm>
 #include <queue>
 using namespace std;
-
-PolyphaseSort::PolyphaseSort(int numTapes, const std::string &inputFile, const std::string &outputFile)
+PolyphaseSort::PolyphaseSort(int numTapes, const string &inputFile, const string &outputFile)
     : numTapes(numTapes), inputFile(inputFile), outputFile(outputFile)
 {
     for (int i = 0; i < numTapes; ++i)
     {
-        tapes.push_back(new Tape("tapes/tape" + std::to_string(i) + ".txt"));
+        tapes.push_back(new Tape("tapes/tape" + to_string(i) + ".txt"));
     }
 }
 
@@ -19,20 +18,19 @@ PolyphaseSort::~PolyphaseSort()
     {
         string nmb = tape->getFilename();
         delete tape;
-        // remove(nmb.c_str());
+        remove(nmb.c_str());
     }
 }
 
 void PolyphaseSort::sort()
 {
-    // Step 1: Distribute initial runs to tapes
+    // 1. Dystrybucja początkowa
     distributeInitialRuns();
 
-    // Step 2: Merge all to one tape
-    // while (!isSorted())
+    // 2. Merge na jedną taśmę
+    while (!isSorted())
         mergePhase();
-
-    // Step 3: Copy the sorted data to output file
+    // 3. Skopiowanie na taśmę outputu
     copyToOutput();
 }
 
@@ -43,34 +41,32 @@ void PolyphaseSort::distributeInitialRuns()
     Number prev;
     bool first = true;
 
-    // Iterative Fibonacci for run distribution (no pre-defined vector)
-    int fibCurrent = 1; // Current Fibonacci number for run limit
-    int fibNext = 1;    // Next Fibonacci number
-    int runCount = 0;   // Runs assigned to current tape
+    int fibCurrent = 1;
+    int fibNext = 1;
+    int runCount = 0;
 
     while (!inputTape.isEmpty())
     {
         Number curr = inputTape.getCurrNumber();
         if (first || !(curr < prev))
-        { // curr >= prev, continue run
+        {
             tapes[tapeIndex]->appendNumber(curr);
             prev = curr;
             first = false;
         }
         else
         {
-            // Start new run: assign to current tape, increment run count
+
             tapes[tapeIndex]->appendNumber(curr);
             runCount++;
             prev = curr;
             first = false;
-            // Check if we've reached the Fibonacci limit for this tape
             if (runCount >= fibCurrent)
             {
-                // Switch to next tape (leaving one empty)
+
                 tapeIndex = (tapeIndex + 1) % (numTapes - 1);
                 runCount = 0;
-                // Update Fibonacci numbers iteratively
+
                 int temp = fibCurrent;
                 fibCurrent = fibNext;
                 fibNext = temp + fibNext;
@@ -88,6 +84,8 @@ void PolyphaseSort::distributeInitialRuns()
 
 void PolyphaseSort::mergePhase()
 {
+    for (Tape* tape:tapes)
+        tape->printTape();
     // 1. Znalezienie pustej taśmy
     int destIndex = findEmpty();
     if (destIndex == -1)
@@ -98,9 +96,8 @@ void PolyphaseSort::mergePhase()
     cout << "Pusta " << destIndex << endl;
     Tape *destination = tapes[destIndex];
     destination->clearTape();
-
     // 2. Znalezienie dwóch niepustych taśm
-    std::vector<Tape *> sources;
+    vector<Tape *> sources;
     for (int i = 0; i < numTapes; ++i)
     {
         if (i != destIndex && !tapes[i]->isEmpty())
@@ -115,64 +112,8 @@ void PolyphaseSort::mergePhase()
         return;
     }
 
-    std::priority_queue<std::pair<Number, int>, std::vector<std::pair<Number, int>>, std::greater<std::pair<Number, int>>> pq;
-
-    for (int i = 0; i < sources.size(); ++i)
-    {
-        sources[i]->goToBegin();
-        if (!sources[i]->isEmpty())
-        {
-            Number num = sources[i]->getCurrNumber();
-            pq.push({num, i});
-        }
-    }
-
-    // 2. Merge dwóch serii z sourców do destynacji
-    // 3. Powtórz póki na jedna z nich nie będzie pusta
-    bool source0Empty = false;
-    bool source1Empty = false;
-    while (!pq.empty() && !(source0Empty || source1Empty))
-    {
-        auto [num, tapeIdx] = pq.top();
-        pq.pop();
-        destination->appendNumber(num);
-
-        if (tapeIdx == 0)
-        {
-            sources[0]->readNextNumber();
-            if (sources[0]->isEmpty())
-            {
-                source0Empty = true;
-            }
-            else
-            {
-                Number nextNum = sources[0]->getCurrNumber();
-                pq.push({nextNum, 0});
-            }
-        }
-        else
-        {
-            sources[1]->readNextNumber();
-            if (sources[1]->isEmpty())
-            {
-                source1Empty = true;
-            }
-            else
-            {
-                Number nextNum = sources[1]->getCurrNumber();
-                pq.push({nextNum, 1});
-            }
-        }
-    }
-
-    destination->writePage();
-
-    for (auto source : sources)
-    {
-        source->printTape();
-        source->deletePrevRecords();
-    }
-    // 4. Pętla w funkcji głownej powtarza póki więcej niż jedna taśma niepusta
+    while (!sources[0]->isEmpty() && !sources[1]->isEmpty())
+        mergeOneRun(destIndex, sources);
 }
 
 bool PolyphaseSort::isSorted()
@@ -227,4 +168,65 @@ int PolyphaseSort::findEmpty()
         }
     }
     return destIndex;
+}
+
+void PolyphaseSort::mergeOneRun(int destIndex, vector<Tape *> sources)
+{
+    Tape *destination = tapes[destIndex];
+
+    
+
+   priority_queue<pair<Number, int>, vector<pair<Number, int>>, greater<pair<Number, int>>> pq;
+
+    for (int i = 0; i < sources.size(); ++i)
+    {
+        sources[i]->goToBegin();
+        if (!sources[i]->isEmpty())
+        {
+            Number num = sources[i]->getCurrNumber();
+            pq.push({num, i});
+        }
+    }
+
+    // 2. Merge dwóch serii z sourców do destynacji
+    // 3. Powtórz póki na jedna z nich nie będzie pusta
+    while (!pq.empty())
+    {
+        auto [num, tapeIdx] = pq.top();
+        pq.pop();
+        destination->appendNumber(num);
+
+        if (tapeIdx == 0)
+        {
+            sources[0]->readNextNumber();
+            if (!sources[0]->isEmpty())
+            {
+                Number nextNum = sources[0]->getCurrNumber();
+                if (nextNum > num)
+                {
+                    pq.push({nextNum, 0});
+                }
+            }
+        }
+        else
+        {
+            sources[1]->readNextNumber();
+            if (!sources[1]->isEmpty())
+            {
+                Number nextNum = sources[1]->getCurrNumber();
+                if (nextNum > num)
+                {
+                    pq.push({nextNum, 1});
+                }
+            }
+        }
+    }
+
+    destination->writePage();
+    destination->resetTape();
+    sources[0]->deletePrevRecords();
+    sources[0]->resetTape();
+    sources[1]->deletePrevRecords();
+    sources[1]->resetTape();
+    // 4. Pętla w funkcji głownej powtarza póki więcej niż jedna taśma niepusta
 }

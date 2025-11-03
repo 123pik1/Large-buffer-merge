@@ -98,16 +98,16 @@ void Tape::appendNumber(Number nmb)
 
 bool Tape::isEmpty()
 {
-    if (empty) return true;
     for (auto i : readPageTab)
     {
-        if (!i.isEmpty()) return false;
+        if (!i.isEmpty())
+            return false;
     }
     streampos currPos = file.tellg();
     file.seekg(0, std::ios::end);
     std::streampos endPos = file.tellg();
     file.seekg(currPos);
-    return endPos <=beginningPos;
+    return endPos <= beginningPos;
 }
 
 void Tape::goToBegin()
@@ -123,8 +123,9 @@ void Tape::printTape()
     file.clear();
     if (!currNmb.isEmpty())
         cout << currNmb.getNumberString() << endl;
-    for (int i = elementOnReadPage; i < pageSize; i++)
-        cout << readPageTab[i].getNumberString() << endl;
+    for (Number number : readPageTab)
+        if (!number.isEmpty())
+            cout << number.getNumberString() << endl;
     string nmb;
     while (file >> nmb)
         cout << nmb << endl;
@@ -137,15 +138,15 @@ void Tape::deletePrevRecords()
     ofstream tempFile(tempTapeLocation);
     string nmb;
     file.seekg(beginningPos);
-    while (file>>nmb)
+    while (file >> nmb)
     {
-        tempFile<<nmb<<endl;
+        tempFile << nmb << endl;
     }
-    //TODO
     file.close();
     tempFile.close();
     remove(filename.c_str());
     rename(tempTapeLocation, filename.c_str());
+    initFile();
     resetTape();
 }
 
