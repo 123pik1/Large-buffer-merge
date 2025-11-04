@@ -102,7 +102,41 @@ Number::Number(string number)
 
 void Number::setNumberString(string nmb)
 {
-    this->numberString = nmb;
+    if (nmb.empty())
+    {
+        numberString = "";
+        return;
+    }
+    // Normalize: remove leading zeros, handle sign and decimal
+    bool negative = (nmb[0] == '-');
+    std::string absNmb = negative ? nmb.substr(1) : nmb;
+    size_t dotPos = absNmb.find('.');
+    if (dotPos != std::string::npos)
+    {
+        // Remove trailing zeros in fractional part
+        size_t lastNonZero = absNmb.find_last_not_of('0');
+        if (lastNonZero > dotPos)
+        {
+            absNmb = absNmb.substr(0, lastNonZero + 1);
+        }
+        else
+        {
+            absNmb = absNmb.substr(0, dotPos); // Remove decimal if no fractional
+        }
+    }
+    // Remove leading zeros from integer part
+    size_t start = absNmb.find_first_not_of('0');
+    if (start != std::string::npos)
+    {
+        absNmb = absNmb.substr(start);
+    }
+    else
+    {
+        absNmb = "0";
+    }
+    numberString = negative ? "-" + absNmb : absNmb;
+    if (numberString == "-0")
+        numberString = "0";
     setInteger();
     setNegative();
 }

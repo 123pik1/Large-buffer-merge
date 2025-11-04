@@ -20,7 +20,11 @@ private:
     void copyToOutput();
 
     int findEmpty();
-    void mergeOneRun(int destIndex, std::vector<Tape *> sources);
+    void mergeOneRun(int idEmpty);
+    int findMinimumAmongActive(int idEmpty, bool *tapeHasData);
+    int countNonEmpty();
+    void writePages();
+
 public:
     PolyphaseSort(int numTapes, const std::string &inputFile, const std::string &outputFile);
     ~PolyphaseSort();

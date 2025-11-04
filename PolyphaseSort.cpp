@@ -18,7 +18,7 @@ PolyphaseSort::~PolyphaseSort()
     {
         string nmb = tape->getFilename();
         delete tape;
-        remove(nmb.c_str());
+        // remove(nmb.c_str());
     }
 }
 
@@ -26,6 +26,11 @@ void PolyphaseSort::sort()
 {
     // 1. Dystrybucja początkowa
     distributeInitialRuns();
+
+    for (auto tape : tapes)
+    {
+        tape->goToBegin();
+    }
 
     // Number nmb1("10679022"), nmb2("-151920.8");
     // cout << (nmb1<nmb2)<<endl;
@@ -39,6 +44,7 @@ void PolyphaseSort::sort()
 void PolyphaseSort::distributeInitialRuns()
 {
     Tape inputTape(inputFile);
+    inputTape.printTape();
     int tapeIndex = 0;
     Number prev;
     bool first = true;
@@ -80,7 +86,6 @@ void PolyphaseSort::distributeInitialRuns()
     for (auto tape : tapes)
     {
         tape->writePage();
-        // tape -> printTape();
     }
 }
 
@@ -93,49 +98,59 @@ void PolyphaseSort::distributeInitialRuns()
  */
 void PolyphaseSort::mergePhase()
 {
-    int destIndex = findEmpty();
-    if (destIndex == -1)
+    cout << "początek sortowania" << endl;
+    int iterations = 0;
+    // sortuje póki jest więcej niż jedna niepusta taśma
+    while (countNonEmpty() > 1)
     {
-        cout << "pusta nieznaleziona" << endl;
-        return;
-    }
-    cout << "Pusta " << destIndex << endl;
-    Tape *destination = tapes[destIndex];
-    destination->clearTape();
-    vector<Tape *> sources;
-    for (int i = 0; i < numTapes; ++i)
-    {
-        if (i != destIndex && !tapes[i]->isEmpty())
-        {
-            sources.push_back(tapes[i]);
-        }
-    }
-    if (sources.empty())
-    {
-        return;
-    }
+        cout << "iteracja sortowania " << (++iterations) << endl;
+        cout << "Non-empty tapes: " << countNonEmpty() << endl;
 
-    // Powtarzaj merge run po runie póki jedna source taśma nie spuścieje
-    while (true)
-    {
-        bool canMerge = true;
-        for (auto s : sources)
+        // Find empty tape
+        int idEmpty = -1;
+        for (int i = 0; i < tapeNumber; i++)
         {
-            if (s->isEmpty())
+            if (tapes[i]->isEmpty())
             {
-                canMerge = false;
+                idEmpty = i;
                 break;
             }
         }
-        if (!canMerge)
+
+        if (idEmpty == -1)
+        {
+            cout << "ERROR: No empty tape found!" << endl;
             break;
-        mergeOneRun(destIndex, sources);
-        // cout << "After mergeOneRun:" << endl;
-        // for (Tape *tape : tapes)
-        //     tape->printTape();
+        }
+
+        // Reset all tapes to beginning
+        for (int i = 0; i < tapeNumber; i++)
+        {
+            tapes[i]->goToBegin();
+        }
+
+        cout << "pusta taśma znaleziona: " << idEmpty << endl;
+
+        // Merge phase
+        int mergeCount = 0;
+        while (countNonEmpty() >= 2)
+        {
+            mergeOneRun(idEmpty);
+            cout << "merge count: " << ++mergeCount << endl;
+        }
+        writePages();
+        for (Tape *tape : tapes)
+            tape->deletePrevRecords();
+
+        cout << "After merge phase:" << endl;
+        for (int i = 0; i < tapeNumber; i++)
+        {
+            cout << "Tape " << i << " empty: " << tapes[i]->isEmpty() << endl;
+        }
     }
-    destination->writePage();
-    // 4. Pętla w funkcji głownej powtarza póki więcej niż jedna taśma niepusta
+    cout << "posortowane" << endl;
+
+
 }
 
 bool PolyphaseSort::isSorted()
@@ -202,51 +217,90 @@ int PolyphaseSort::findEmpty()
  * 7. jeżeli nowy numer jest >= zapisuje go do kolejki
  * 8. wróć do 3
  */
-void PolyphaseSort::mergeOneRun(int destIndex, vector<Tape *> sources)
+void PolyphaseSort::mergeOneRun(int idEmpty)
 {
-    // 1
-    Tape *destination = tapes[destIndex];
-    priority_queue<pair<Number, int>, vector<pair<Number, int>>, greater<pair<Number, int>>> pq;
-    vector<Number> lastFromSource(sources.size());
+    // czy run się skonczył na danej taśmie
+    bool tapeHasData[tapeNumber];
+    // ostatnia liczba zapisana z taśmy
+    Number lastFromTape[tapeNumber];
 
-    // 2
-    for (int i = 0; i < sources.size(); i++)
+    for (int i = 0; i < tapeNumber; i++)
     {
-        if (!sources[i]->isEmpty())
-        {
-            Number num = sources[i]->getCurrNumber();
-            pq.push({num, i});
-            lastFromSource[i] = num;
-        }
+        tapeHasData[i] = !tapes[i]->isEmpty();
     }
 
-    // 3
-    while (!pq.empty())
+    while (true)
     {
-        // 4
-        auto [num, sourceId] = pq.top();
-        pq.pop();
-        destination->appendNumber(num);
+        // index najmniejszej liczby
+        int idLowest = findMinimumAmongActive( idEmpty, tapeHasData);
+        // brak najmniejszej liczby - wychodzi
+        if (idLowest == -1)
+            break;
+        cout << tapes[idLowest]->getCurrNumber().getNumberString() << endl;
+        Number current = tapes[idLowest]->getCurrNumber();
 
-        // 5
-        sources[sourceId]->readNextNumber();
-        if (!sources[sourceId]->isEmpty())
+        tapes[idEmpty]->appendNumber(current);
+        lastFromTape[idLowest] = current; // zapisuje ostatni numer który został przekazany
+        tapes[idLowest]->readNextNumber();
+
+        // Check if run ended: next number is smaller than current
+        if (tapes[idLowest]->isEmpty() ||
+            lastFromTape[idLowest].isHigherThan(tapes[idLowest]->getCurrNumber()))
         {
-            // 6
-            Number nextNum = sources[sourceId]->getCurrNumber();
-            if (nextNum < lastFromSource[sourceId])
-            {
-            }
-            else
-            {
-                // 7
-                pq.push({nextNum, sourceId});
-                lastFromSource[sourceId] = nextNum;
-            }
+            tapeHasData[idLowest] = false;
         }
 
-        // 8
+        // Check if all runs finished
+        bool anyTapeActive = false;
+        for (int i = 0; i < tapeNumber; i++)
+        {
+            if (tapeHasData[i])
+            {
+                anyTapeActive = true;
+                break;
+            }
+        }
+        if (!anyTapeActive)
+            break;
     }
 }
 
+int PolyphaseSort::findMinimumAmongActive(int idEmpty, bool *tapeHasData)
+{
+    // id najmniejszej
+    int idLowest = -1;
+    for (int i = 0; i < tapeNumber; i++)
+    {
+
+        if (!tapeHasData[i])
+            // if (tapes[i]->isEmpty())
+            continue;
+
+        if (idLowest == -1 ||
+            tapes[i]->getCurrNumber().isLowerThan(tapes[idLowest]->getCurrNumber()))
+        {
+            idLowest = i;
+        }
+    }
+    return idLowest;
+}
+
+int PolyphaseSort::countNonEmpty()
+{
+    int counter =0;
+    for (Tape* tape : tapes)
+    {
+        if (!tape->isEmpty())
+            counter++;
+    }
+    return counter;
+}
+
+void PolyphaseSort::writePages()
+{
+    for (Tape* tape:tapes)
+    {
+        tape->writePage();
+    }
+}
 // TODO result is not sorted properly

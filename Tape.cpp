@@ -3,7 +3,7 @@
 using namespace std;
 
 // konieczne dla algorytmu
-Tape::Tape(string filename) : filename(filename), currNmb(""), beginningPos(0)
+Tape::Tape(string filename) : filename(filename), currNmb(""), beginningPos(0), empty(false)
 {
     initFile();
 }
@@ -96,18 +96,35 @@ void Tape::appendNumber(Number nmb)
     elementOnWritePage++;
 }
 
+// bool Tape::isEmpty()
+// {
+//     for (auto i : readPageTab)
+//     {
+//         if (!i.isEmpty())
+//             return false;
+//     }
+//     streampos currPos = file.tellg();
+//     file.seekg(0, std::ios::end);
+//     std::streampos endPos = file.tellg();
+//     file.seekg(currPos);
+//     return endPos <= beginningPos;
+// }
 bool Tape::isEmpty()
 {
-    for (auto i : readPageTab)
-    {
-        if (!i.isEmpty())
-            return false;
-    }
+    if (elementOnReadPage < pageSize && !readPageTab[elementOnReadPage].isEmpty())
+        return false;
+    // If readPage not called or page exhausted, check file
     streampos currPos = file.tellg();
-    file.seekg(0, std::ios::end);
-    std::streampos endPos = file.tellg();
+    file.seekg(beginningPos);
+    string dummy;
+    bool hasData = !(!(file >> dummy));
     file.seekg(currPos);
-    return endPos <= beginningPos;
+    if (hasData)
+    {
+        file.seekg(beginningPos); // Reset for proper read
+        return false;
+    }
+    return true;
 }
 
 void Tape::goToBegin()
@@ -169,6 +186,8 @@ void Tape::initFile()
         createFile.close();
         file.open(filename, ios::in | ios::out);
     }
+    beginningPos=0;
+    file.seekg(beginningPos);
 }
 
 void Tape::resetWritePage()

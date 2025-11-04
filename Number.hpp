@@ -47,11 +47,11 @@ public:
 
     bool operator<(const Number& other) const
     {
-        return other.isHigherThan(*this);
+        return this->isLowerThan(other);
     }
     bool operator>(const Number& other) const
     {
-        return other.isLowerThan(*this);
+        return this->isHigherThan(other);
     }
 
 };
