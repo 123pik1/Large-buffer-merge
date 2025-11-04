@@ -3,7 +3,10 @@
 #include <random>
 using namespace std;
 
-
+// priorytety:
+// 1. float mniejszy od inta
+// 2. ujemne mniejsze od dodatnich
+// 3. Porównanie matematyczne
 Number::ComparisonResult Number::isWhatTo(Number nmb) const
 {
     if (!this->isInteger && nmb.isInteger)

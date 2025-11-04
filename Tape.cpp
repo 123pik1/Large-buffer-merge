@@ -123,9 +123,9 @@ void Tape::printTape()
     file.clear();
     if (!currNmb.isEmpty())
         cout << currNmb.getNumberString() << endl;
-    for (Number number : readPageTab)
-        if (!number.isEmpty())
-            cout << number.getNumberString() << endl;
+    for (int i=elementOnReadPage;i<pageSize;i++)
+        if (!readPageTab[i].isEmpty())
+            cout << readPageTab[i].getNumberString() << endl;
     string nmb;
     while (file >> nmb)
         cout << nmb << endl;
@@ -154,6 +154,7 @@ void Tape::clearTape()
 {
     file.close();
     remove(filename.c_str());
+    beginningPos=0;
     initFile();
 }
 
