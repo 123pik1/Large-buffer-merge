@@ -26,6 +26,17 @@ private:
     void writePages();
     void printTapes();
 
+    // wymogi zadania
+    int readCounter = 0;
+    int writeCounter = 0;
+    void startMenu();
+    void interMenu();
+    int mergeCounter = 0;
+    bool autoMerge = false;
+    int mergesToPrintMenu = 0;
+    void runPyScript();
+    void enterData();
+    void enterEntryFile();
 public:
     PolyphaseSort(int numTapes, const std::string &inputFile, const std::string &outputFile);
     ~PolyphaseSort();

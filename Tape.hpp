@@ -54,6 +54,14 @@ public:
     {
         return filename;
     }
+    int getReadCounter()
+    {
+        return readCounter;
+    }
+    int getWriteCounter()
+    {
+        return writeCounter;
+    }
 
 private:
     // metody pomocnicze

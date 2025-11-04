@@ -24,6 +24,7 @@ PolyphaseSort::~PolyphaseSort()
 
 void PolyphaseSort::sort()
 {
+    startMenu();
     // 1. Dystrybucja początkowa
     distributeInitialRuns();
 
@@ -35,10 +36,18 @@ void PolyphaseSort::sort()
     // Number nmb1("10679022"), nmb2("-151920.8");
     // cout << (nmb1<nmb2)<<endl;
     // 2. Merge na jedną taśmę
-    while (!isSorted())
-        mergePhase();
+    // while (!isSorted())
+    mergePhase();
+
+    for (Tape *tape : tapes)
+    {
+        readCounter += tape->getReadCounter();
+        writeCounter += tape->getWriteCounter();
+    }
     // 3. Skopiowanie na taśmę outputu
     copyToOutput();
+
+    
 }
 
 void PolyphaseSort::distributeInitialRuns()
@@ -87,6 +96,8 @@ void PolyphaseSort::distributeInitialRuns()
     {
         tape->writePage();
     }
+    readCounter += inputTape.getReadCounter();
+    writeCounter += inputTape.getWriteCounter();
 }
 
 /****
@@ -98,14 +109,10 @@ void PolyphaseSort::distributeInitialRuns()
  */
 void PolyphaseSort::mergePhase()
 {
-    cout << "początek sortowania" << endl;
     int iterations = 0;
     // sortuje póki jest więcej niż jedna niepusta taśma
     while (countNonEmpty() > 1)
     {
-        cout << "iteracja sortowania " << (++iterations) << endl;
-        cout << "Non-empty tapes: " << countNonEmpty() << endl;
-
         // Find empty tape
         int idEmpty = -1;
         for (int i = 0; i < tapeNumber; i++)
@@ -119,35 +126,19 @@ void PolyphaseSort::mergePhase()
 
         if (idEmpty == -1)
         {
-            cout << "ERROR: No empty tape found!" << endl;
+            cerr << "ERROR: No empty tape found!" << endl;
             break;
         }
 
 
-
-        cout << "pusta taśma znaleziona: " << idEmpty << endl;
-
-        // Merge phase
-        int mergeCount = 0;
         while (countNonEmpty() >= 2)
         {
             mergeOneRun(idEmpty);
-            cout << "merge count: " << ++mergeCount << endl;
-            printTapes();
         }
-        // for (Tape *tape : tapes)
-            // tape->deletePrevRecords();
 
-        cout << "After merge phase:" << endl;
-        for (int i = 0; i < tapeNumber; i++)
-        {
-            cout << "Tape " << i << " empty: " << tapes[i]->isEmpty() << endl;
-        }
         tapes[idEmpty]->writePage();
+
     }
-    cout << "posortowane" << endl;
-
-
 }
 
 bool PolyphaseSort::isSorted()
@@ -162,26 +153,6 @@ bool PolyphaseSort::isSorted()
     }
     return nonEmptyCount <= 1;
 }
-
-// void PolyphaseSort::copyToOutput()
-// {
-//     Tape outputTape(outputFile);
-//     outputTape.clearTape();
-//     for (auto tape : tapes)
-//     {
-//         if (!tape->isEmpty())
-//         {
-//             tape->goToBegin();
-//             while (!tape->isEmpty())
-//             {
-//                 Number num = tape->getCurrNumber();
-//                 outputTape.appendNumber(num);
-//                 tape->readNextNumber();
-//             }
-//         }
-//     }
-//     outputTape.writePage();
-// }
 
 void PolyphaseSort::copyToOutput()
 {
@@ -207,7 +178,15 @@ void PolyphaseSort::copyToOutput()
             sortedTape->readNextNumber();
         }
         outputTape.writePage();
+        cout << "==== Stats ====" << endl;
+        cout << "liczba merge'y " << mergeCounter << endl;
+        cout << "liczba zapisów " << writeCounter << endl;
+        cout << "liczba odczytów " << readCounter << endl;
+        cout << "suma dostępów do dysku " << readCounter + writeCounter << endl;
+        cout << "Tasma wynikowa: \n";
+        outputTape.printTape();
     }
+    
 }
 
 int PolyphaseSort::findEmpty()
@@ -236,6 +215,8 @@ int PolyphaseSort::findEmpty()
  */
 void PolyphaseSort::mergeOneRun(int idEmpty)
 {
+    interMenu();
+    mergeCounter++;
     // czy run się skonczył na danej taśmie
     bool tapeHasData[tapeNumber];
     // ostatnia liczba zapisana z taśmy
@@ -249,11 +230,10 @@ void PolyphaseSort::mergeOneRun(int idEmpty)
     while (true)
     {
         // index najmniejszej liczby
-        int idLowest = findMinimumAmongActive( idEmpty, tapeHasData);
+        int idLowest = findMinimumAmongActive(idEmpty, tapeHasData);
         // brak najmniejszej liczby - wychodzi
         if (idLowest == -1)
             break;
-        cout << tapes[idLowest]->getCurrNumber().getNumberString() << endl;
         Number current = tapes[idLowest]->getCurrNumber();
 
         tapes[idEmpty]->appendNumber(current);
@@ -304,8 +284,8 @@ int PolyphaseSort::findMinimumAmongActive(int idEmpty, bool *tapeHasData)
 
 int PolyphaseSort::countNonEmpty()
 {
-    int counter =0;
-    for (Tape* tape : tapes)
+    int counter = 0;
+    for (Tape *tape : tapes)
     {
         if (!tape->isEmpty())
             counter++;
@@ -315,7 +295,7 @@ int PolyphaseSort::countNonEmpty()
 
 void PolyphaseSort::writePages()
 {
-    for (Tape* tape:tapes)
+    for (Tape *tape : tapes)
     {
         tape->writePage();
     }
@@ -323,7 +303,108 @@ void PolyphaseSort::writePages()
 
 void PolyphaseSort::printTapes()
 {
-    for (Tape* tape:tapes)
+    for (Tape *tape : tapes)
         tape->printTape();
 }
-// TODO there are 4 records lost
+
+// wymogi zadania
+void PolyphaseSort::startMenu()
+{
+    int choice;
+    cout << "\n=== start menu ===" << endl;
+    cout << "1. Wygeneruj dane" << endl;
+    cout << "2. Ile merge'y przed kolejnym menu"<<endl;
+    cout << "3. Wprowadz dane z klawiatury" << endl;
+    cout << "4. Załaduj z pliku" << endl;
+    cout << "5. Ustaw tryb auto" << endl;
+    cout << "Twój wybór: ";
+    cin >> choice;
+    switch (choice)
+    {
+    case 1:
+        runPyScript();
+        break;
+    case 2:
+        cin >> mergesToPrintMenu;
+        break;
+    case 3:
+        enterData();
+        break;
+    case 4:
+        enterEntryFile();
+    case 5:
+        autoMerge=true;
+    default:
+        break;
+    }
+}
+
+void PolyphaseSort::runPyScript()
+{
+    string command = "cd data; python3 generateData.py";
+    int result = system(command.c_str());
+    if (result != 0)
+    {
+        cout << "Problem ze skryptem: " << result << endl;
+    }
+    else
+    {
+        cout << "Skrypt wykonał sie szczęśliwie" << endl;
+    }
+}
+
+void PolyphaseSort::enterData()
+{
+    Tape inputTape(inputFile);
+    cout << "chcesz wyczyścic wejście? y/n\n";
+    string answ;
+    cin >> answ;
+    if (answ=="y")
+        inputTape.clearTape();
+    cout << "ile liczb?\n";
+    int n;
+    cin >> n;
+    for (int i=0; i<n;i++)
+    {
+        string nmb;
+        cin >> nmb;
+        inputTape.appendNumber(Number(nmb));
+    }
+}
+
+void PolyphaseSort::enterEntryFile()
+{
+    cin >> inputFile;
+}
+
+void PolyphaseSort::interMenu()
+{
+    if (autoMerge)
+        return;
+    if (mergesToPrintMenu>0)
+    {
+        mergesToPrintMenu--;
+        return;
+    }
+    int choice;
+    cout << "\n=== inter menu ===" << endl;
+    cout << "1. Ile merge'y przed kolejnym menu" << endl;
+    cout << "2. Ustaw tryb auto" << endl;
+    cout << "3. wyswietl tasmy" << endl;
+    cout << "Twój wybór: ";
+    cin >> choice;
+    switch (choice)
+    {
+    case 1:
+        cin>>mergesToPrintMenu;
+        break;
+    case 2:
+        autoMerge = true;
+        break;
+    case 3:
+        printTapes();
+        break;
+    default:
+        break;
+    }
+}
