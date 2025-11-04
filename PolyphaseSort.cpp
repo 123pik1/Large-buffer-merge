@@ -84,11 +84,15 @@ void PolyphaseSort::distributeInitialRuns()
     }
 }
 
+/****
+ * 1. znalezienie pustej taśmy
+ * 2. uznanie jej za destynację
+ * 3. wybranie taśm początkowych
+ * 4. MergeOneRun
+ * 5. Powtarzaj 4 póki nie powstanie nowa pusta
+ */
 void PolyphaseSort::mergePhase()
 {
-    // for (Tape* tape:tapes)
-    //     tape->printTape();
-    // 1. Znalezienie pustej taśmy
     int destIndex = findEmpty();
     if (destIndex == -1)
     {
@@ -98,7 +102,6 @@ void PolyphaseSort::mergePhase()
     cout << "Pusta " << destIndex << endl;
     Tape *destination = tapes[destIndex];
     destination->clearTape();
-    // 2. Znalezienie wszystkich niepustych taśm
     vector<Tape *> sources;
     for (int i = 0; i < numTapes; ++i)
     {
@@ -131,6 +134,7 @@ void PolyphaseSort::mergePhase()
         // for (Tape *tape : tapes)
         //     tape->printTape();
     }
+    destination->writePage();
     // 4. Pętla w funkcji głownej powtarza póki więcej niż jedna taśma niepusta
 }
 
@@ -188,13 +192,24 @@ int PolyphaseSort::findEmpty()
     return destIndex;
 }
 
+/***
+ * 1. tworzy kolejkę priorytetową - posortowaną wg wielkości sortowanych liczb
+ * 2. wrzuca na nią liczby z każdej dostępnej taśmy wejściowej
+ * 3. sprawdza czy kolejka jest pusta, jeżeli tak zakończ
+ * 4. zapisuje nowy numer w destination
+ * 5. odczytuje kolejny numer z taśmy
+ * 6. porównuje z poprzednim odczytanym z danej taśmy
+ * 7. jeżeli nowy numer jest >= zapisuje go do kolejki
+ * 8. wróć do 3
+ */
 void PolyphaseSort::mergeOneRun(int destIndex, vector<Tape *> sources)
 {
+    // 1
     Tape *destination = tapes[destIndex];
     priority_queue<pair<Number, int>, vector<pair<Number, int>>, greater<pair<Number, int>>> pq;
     vector<Number> lastFromSource(sources.size());
-    vector<bool> runActive(sources.size(), true);
 
+    // 2
     for (int i = 0; i < sources.size(); i++)
     {
         if (!sources[i]->isEmpty())
@@ -205,41 +220,33 @@ void PolyphaseSort::mergeOneRun(int destIndex, vector<Tape *> sources)
         }
     }
 
+    // 3
     while (!pq.empty())
     {
+        // 4
         auto [num, sourceId] = pq.top();
         pq.pop();
         destination->appendNumber(num);
 
+        // 5
         sources[sourceId]->readNextNumber();
         if (!sources[sourceId]->isEmpty())
         {
+            // 6
             Number nextNum = sources[sourceId]->getCurrNumber();
             if (nextNum < lastFromSource[sourceId])
             {
-                // KONIEC RUNU na tej taśmie
-                runActive[sourceId] = false;
             }
             else
             {
+                // 7
                 pq.push({nextNum, sourceId});
                 lastFromSource[sourceId] = nextNum;
             }
         }
-        else
-        {
-            runActive[sourceId] = false;
-        }
 
-        // jeśli wszystkie runy są zakończone -> przerwij ten merge
-        if (all_of(runActive.begin(), runActive.end(), [](bool active)
-                   { return !active; }))
-        {
-            break;
-        }
+        // 8
     }
-
-    destination->writePage();
 }
 
-//TODO result is not sorted properly
+// TODO result is not sorted properly
