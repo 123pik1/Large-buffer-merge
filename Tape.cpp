@@ -113,18 +113,14 @@ bool Tape::isEmpty()
 {
     if (elementOnReadPage < pageSize && !readPageTab[elementOnReadPage].isEmpty())
         return false;
-    // If readPage not called or page exhausted, check file
-    streampos currPos = file.tellg();
+    if (!currNmb.isEmpty())
+        return false;
     file.seekg(beginningPos);
     string dummy;
-    bool hasData = !(!(file >> dummy));
-    file.seekg(currPos);
-    if (hasData)
-    {
-        file.seekg(beginningPos); // Reset for proper read
-        return false;
-    }
-    return true;
+    bool hasData = static_cast<bool>(file >> dummy);
+    file.seekg(beginningPos);
+
+    return !hasData;
 }
 
 void Tape::goToBegin()
@@ -140,7 +136,7 @@ void Tape::printTape()
     file.clear();
     if (!currNmb.isEmpty())
         cout << currNmb.getNumberString() << endl;
-    for (int i=elementOnReadPage;i<pageSize;i++)
+    for (int i = elementOnReadPage; i < pageSize; i++)
         if (!readPageTab[i].isEmpty())
             cout << readPageTab[i].getNumberString() << endl;
     string nmb;
@@ -171,7 +167,7 @@ void Tape::clearTape()
 {
     file.close();
     remove(filename.c_str());
-    beginningPos=0;
+    beginningPos = 0;
     initFile();
 }
 
@@ -186,7 +182,7 @@ void Tape::initFile()
         createFile.close();
         file.open(filename, ios::in | ios::out);
     }
-    beginningPos=0;
+    beginningPos = 0;
     file.seekg(beginningPos);
 }
 

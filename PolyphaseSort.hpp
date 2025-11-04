@@ -24,6 +24,7 @@ private:
     int findMinimumAmongActive(int idEmpty, bool *tapeHasData);
     int countNonEmpty();
     void writePages();
+    void printTapes();
 
 public:
     PolyphaseSort(int numTapes, const std::string &inputFile, const std::string &outputFile);

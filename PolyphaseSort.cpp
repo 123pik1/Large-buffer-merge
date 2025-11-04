@@ -18,7 +18,7 @@ PolyphaseSort::~PolyphaseSort()
     {
         string nmb = tape->getFilename();
         delete tape;
-        // remove(nmb.c_str());
+        remove(nmb.c_str());
     }
 }
 
@@ -123,11 +123,7 @@ void PolyphaseSort::mergePhase()
             break;
         }
 
-        // Reset all tapes to beginning
-        for (int i = 0; i < tapeNumber; i++)
-        {
-            tapes[i]->goToBegin();
-        }
+
 
         cout << "pusta taśma znaleziona: " << idEmpty << endl;
 
@@ -137,16 +133,17 @@ void PolyphaseSort::mergePhase()
         {
             mergeOneRun(idEmpty);
             cout << "merge count: " << ++mergeCount << endl;
+            printTapes();
         }
-        writePages();
-        for (Tape *tape : tapes)
-            tape->deletePrevRecords();
+        // for (Tape *tape : tapes)
+            // tape->deletePrevRecords();
 
         cout << "After merge phase:" << endl;
         for (int i = 0; i < tapeNumber; i++)
         {
             cout << "Tape " << i << " empty: " << tapes[i]->isEmpty() << endl;
         }
+        tapes[idEmpty]->writePage();
     }
     cout << "posortowane" << endl;
 
@@ -165,6 +162,26 @@ bool PolyphaseSort::isSorted()
     }
     return nonEmptyCount <= 1;
 }
+
+// void PolyphaseSort::copyToOutput()
+// {
+//     Tape outputTape(outputFile);
+//     outputTape.clearTape();
+//     for (auto tape : tapes)
+//     {
+//         if (!tape->isEmpty())
+//         {
+//             tape->goToBegin();
+//             while (!tape->isEmpty())
+//             {
+//                 Number num = tape->getCurrNumber();
+//                 outputTape.appendNumber(num);
+//                 tape->readNextNumber();
+//             }
+//         }
+//     }
+//     outputTape.writePage();
+// }
 
 void PolyphaseSort::copyToOutput()
 {
@@ -303,4 +320,10 @@ void PolyphaseSort::writePages()
         tape->writePage();
     }
 }
-// TODO result is not sorted properly
+
+void PolyphaseSort::printTapes()
+{
+    for (Tape* tape:tapes)
+        tape->printTape();
+}
+// TODO there are 4 records lost
