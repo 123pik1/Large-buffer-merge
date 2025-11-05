@@ -22,7 +22,10 @@ void Tape::readPage()
 {
     resetReadPage();
     string nmb;
+    file.clear();
     file.seekg(beginningPos);
+
+    int itemsRead = 0;
     for (int i = 0; i < pageSize; i++)
     {
         if (file >> nmb)
@@ -30,15 +33,23 @@ void Tape::readPage()
             empty = false;
             Number number(nmb);
             readPageTab[i] = number;
-            beginningPos = file.tellg();
+            itemsRead++;
+            streampos pos = file.tellg();
+            if (pos != static_cast<streampos>(-1))
+                beginningPos = pos;
         }
-        else if (i == 0)
+        else
         {
-            empty = true;
+            if (i == 0)
+                empty = true;
             break;
         }
     }
-    elementOnReadPage = 0;
+    if (itemsRead > 0)
+        elementOnReadPage = 0;
+    else
+        elementOnReadPage = pageSize;
+
     readCounter++;
 }
 
@@ -47,6 +58,11 @@ void Tape::readNextNumber()
     if (elementOnReadPage >= pageSize)
     {
         readPage();
+    }
+    if (elementOnReadPage >= pageSize)
+    {
+        currNmb.setNumberString("");
+        return;
     }
     currNmb = readPageTab[elementOnReadPage];
     elementOnReadPage++;
@@ -61,6 +77,7 @@ Number Tape::getCurrNumber()
 
 void Tape::resetTape()
 {
+    file.clear();
     beginningPos = 0;
     file.seekg(beginningPos);
     file.seekp(0, ios::end);
@@ -68,25 +85,26 @@ void Tape::resetTape()
 
 void Tape::writePage()
 {
+    if (elementOnWritePage == 0)
+        return;
     file.clear();
     file.seekp(0, ios::end);
-    for (int i = 0; i < pageSize; i++)
+    for (int i = 0; i < elementOnWritePage; i++)
     {
         if (!writePageTab[i].isEmpty())
         {
-            file << writePageTab[i].getNumberString() << endl;
+            file << writePageTab[i].getNumberString() << '\n';
             empty = false;
         }
     }
     writeCounter++;
-    elementOnWritePage = 0;
     file.flush();
     resetWritePage();
 }
 
-void Tape::appendNumber(Number nmb)
+void Tape::appendNumber(const Number &nmb)
 {
-    if (nmb.getNumberString() != "")
+    if (!nmb.isEmpty())
         empty = false;
     if (elementOnWritePage >= pageSize)
     {
@@ -96,16 +114,17 @@ void Tape::appendNumber(Number nmb)
     elementOnWritePage++;
 }
 
-
 bool Tape::isEmpty()
 {
     if (elementOnReadPage < pageSize && !readPageTab[elementOnReadPage].isEmpty())
         return false;
     if (!currNmb.isEmpty())
         return false;
+    file.clear();
     file.seekg(beginningPos);
     string dummy;
     bool hasData = static_cast<bool>(file >> dummy);
+    file.clear();
     file.seekg(beginningPos);
 
     return !hasData;
@@ -113,48 +132,76 @@ bool Tape::isEmpty()
 
 void Tape::goToBegin()
 {
+    file.clear();
     file.seekg(beginningPos);
 }
 
 // debugowanie + wymogi zadania
 void Tape::printTape()
 {
-    file.seekg(beginningPos);
-    cout << "wyswietlanie tasmy " << filename << endl;
     file.clear();
+    file.seekg(beginningPos);
+    cout << "wyswietlanie tasmy " << filename << '\n';
     if (!currNmb.isEmpty())
-        cout << currNmb.getNumberString() << endl;
+        cout << currNmb.getNumberString() << '\n';
     for (int i = elementOnReadPage; i < pageSize; i++)
         if (!readPageTab[i].isEmpty())
-            cout << readPageTab[i].getNumberString() << endl;
+            cout << readPageTab[i].getNumberString() << '\n';
     string nmb;
     while (file >> nmb)
-        cout << nmb << endl;
+        cout << nmb << '\n';
     file.clear();
     file.seekg(beginningPos);
 }
 
 void Tape::deletePrevRecords()
 {
-    ofstream tempFile(tempTapeLocation);
-    string nmb;
+    file.clear();
     file.seekg(beginningPos);
+
+    ofstream tempFile(tempTapeLocation);
+    if (!tempFile.is_open())
+    {
+        cerr << "deletePrevRecords: failed to open temp file: " << tempTapeLocation << '\n';
+        return;
+    }
+
+    string nmb;
     while (file >> nmb)
     {
-        tempFile << nmb << endl;
+        tempFile << nmb << '\n';
     }
+
     file.close();
     tempFile.close();
-    remove(filename.c_str());
-    rename(tempTapeLocation, filename.c_str());
+
+    if (remove(filename.c_str()) != 0)
+    {
+        cerr << "deletePrevRecords: failed to remove file: " << filename << '\n';
+        // attempt to reopen original file
+        initFile();
+        return;
+    }
+    if (rename(tempTapeLocation, filename.c_str()) != 0)
+    {
+        cerr << "deletePrevRecords: failed to rename temp file to: " << filename << '\n';
+        initFile();
+        return;
+    }
+
     initFile();
     resetTape();
 }
 
 void Tape::clearTape()
 {
-    file.close();
-    remove(filename.c_str());
+    if (file.is_open())
+        file.close();
+
+    if (remove(filename.c_str()) != 0)
+    {
+        cerr << "clearTape: failed to remove file: " << filename << '\n';
+    }
     beginningPos = 0;
     initFile();
 }
@@ -163,12 +210,12 @@ void Tape::clearTape()
 
 void Tape::initFile()
 {
-    file.open(filename, ios::in | ios::out);
+    file.open(filename, ios::in | ios::out | ios::ate);
     if (!file.is_open())
     {
         ofstream createFile(filename);
         createFile.close();
-        file.open(filename, ios::in | ios::out);
+        file.open(filename, ios::in | ios::out | ios::ate);
     }
     beginningPos = 0;
     file.seekg(beginningPos);

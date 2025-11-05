@@ -24,7 +24,8 @@ PolyphaseSort::~PolyphaseSort()
 
 void PolyphaseSort::sort()
 {
-    startMenu();
+    // TODO
+    // startMenu();
     // 1. Dystrybucja początkowa
     distributeInitialRuns();
 
@@ -131,13 +132,15 @@ void PolyphaseSort::mergePhase()
         }
 
 
-        while (countNonEmpty() >= 2)
+        while (tapes[idEmpty]->isEmpty() || findEmpty()==-1)
         {
             mergeOneRun(idEmpty);
         }
 
         tapes[idEmpty]->writePage();
 
+        // interMenu();
+        mergeCounter++;
     }
 }
 
@@ -215,8 +218,7 @@ int PolyphaseSort::findEmpty()
  */
 void PolyphaseSort::mergeOneRun(int idEmpty)
 {
-    interMenu();
-    mergeCounter++;
+
     // czy run się skonczył na danej taśmie
     bool tapeHasData[tapeNumber];
     // ostatnia liczba zapisana z taśmy

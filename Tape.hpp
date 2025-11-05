@@ -1,3 +1,5 @@
+#pragma once
+
 #include "constants.h"
 #include "Number.hpp"
 #include <string>
@@ -33,7 +35,6 @@ private:
 public:
     // konieczność dla algorytmu
 
-    // reads next number from tape
     Tape(std::string filename);
     ~Tape();
 
@@ -42,7 +43,7 @@ public:
 
     void resetTape();
     void writePage();
-    void appendNumber(Number nmb);
+    void appendNumber(const Number &nmb);
     bool isEmpty();
     void goToBegin();
     void deletePrevRecords();
@@ -50,15 +51,15 @@ public:
 
     // debugowanie + wymogi zadania
     void printTape();
-    std::string getFilename()
+    std::string getFilename() const
     {
         return filename;
     }
-    int getReadCounter()
+    int getReadCounter() const
     {
         return readCounter;
     }
-    int getWriteCounter()
+    int getWriteCounter() const
     {
         return writeCounter;
     }
