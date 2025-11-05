@@ -22,6 +22,7 @@ void Tape::readPage()
 {
     resetReadPage();
     string nmb;
+
     file.clear();
     file.seekg(beginningPos);
 
@@ -34,9 +35,23 @@ void Tape::readPage()
             Number number(nmb);
             readPageTab[i] = number;
             itemsRead++;
+
+            // update beginningPos immediately after each successful extraction
             streampos pos = file.tellg();
             if (pos != static_cast<streampos>(-1))
+            {
                 beginningPos = pos;
+            }
+            else
+            {
+                // if tellg is invalid, try to move to EOF and use that position
+                file.clear();
+                file.seekg(0, ios::end);
+                pos = file.tellg();
+                if (pos != static_cast<streampos>(-1))
+                    beginningPos = pos;
+                // leave stream state as-is; next loop iteration will see EOF
+            }
         }
         else
         {
@@ -45,6 +60,7 @@ void Tape::readPage()
             break;
         }
     }
+
     if (itemsRead > 0)
         elementOnReadPage = 0;
     else

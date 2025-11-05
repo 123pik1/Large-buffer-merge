@@ -11,6 +11,6 @@
 #define OutputFile "output/result"
 
 // wielkość strony w rekordach
-#define pageSize 4
+#define pageSize 7
 // lokacja taśmy tymczasowej
 #define tempTapeLocation "tapes/tmp"
