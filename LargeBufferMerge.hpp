@@ -9,28 +9,28 @@
 class LargeBufferMerge
 {
 public:
-    explicit LargeBufferMerge(std::size_t bufferSize = LARGE_BUFFER_SIZE, std::string inputFile=InputFile, std::string outputFile=OutputFile);
-    ~LargeBufferMerge();
+    explicit LargeBufferMerge(unsigned int bufferSize = LARGE_BUFFER_SIZE, std::string inputFile = InputFile, std::string outputFile = OutputFile);
+
     void sort();
 
-    std::size_t getReadCount() const noexcept { return readCount; }
-    std::size_t getWriteCount() const noexcept { return writeCount; }
+    unsigned int getReadCount() const noexcept { return readCount; }
+    unsigned int getWriteCount() const noexcept { return writeCount; }
 
 private:
-    std::size_t bufferSize;
-    std::size_t readCount;
-    std::size_t writeCount;
+    unsigned int bufferSize;
+    unsigned int readCount;
+    unsigned int writeCount;
 
     std::string inputFile;
     std::string outputFile;
 
-    int numTapes = tapeNumber;
-    std::vector<Tape*> runTapes;
-
-    void createInitialRuns(Tape &inputTape);
-    void mergeRuns(Tape &outputTape);
+    std::vector<std::string> createInitialRuns(Tape &inputTape);
+    void mergeRuns(const std::vector<std::string> &runFiles, Tape &outputTape);
     void flushBuffer(Tape &outputTape, std::vector<Number> &buffer);
     void cleanup(const std::vector<std::string> &runFiles) const;
+
+    unsigned long long allTapes = 0;
+    unsigned long long currentTape = 0;
 
     // wymogi zadania
     void startMenu();
