@@ -43,6 +43,8 @@ LargeBufferMerge::~LargeBufferMerge()
 
 void LargeBufferMerge::sort()
 {
+    //TODO
+//    startMenu();
     readCount = 0;
     writeCount = 0;
 
@@ -60,8 +62,7 @@ void LargeBufferMerge::sort()
         mergeCounter++;
     }
     moveToOutput();
-    // Tape result(makeRunFilename(allTapes - 1));
-    // copyToAnotherTape(&result, &outputTape);
+    
 }
 
 void LargeBufferMerge::createInitialRuns(Tape &inputTape)
@@ -83,6 +84,7 @@ void LargeBufferMerge::createInitialRuns(Tape &inputTape)
         if (buffer.empty())
             break;
         // sortuje używając customowego porównania z klasy numer
+        // std jest konieczne ze względu na namespace
         std::sort(buffer.begin(), buffer.end(), [](const Number &lhs, const Number &rhs)
                   { return lhs < rhs; });
 
@@ -104,12 +106,12 @@ void LargeBufferMerge::createInitialRuns(Tape &inputTape)
 
 void LargeBufferMerge::mergeRuns()
 {
-    vector<unique_ptr<Tape>> runTapes;
+    vector<Tape*> runTapes;
     for (int i = 0; i < activeTapes; i++)
     {
-        unique_ptr<Tape> tape = make_unique<Tape>(makeRunFilename(currentTape++));
+        Tape* tape = new Tape(makeRunFilename(currentTape++));
         tape->goToBegin();
-        runTapes.push_back(move(tape));
+        runTapes.push_back(tape);
     }
     Tape outputTape(makeRunFilename(allTapes++));
 
@@ -151,8 +153,11 @@ void LargeBufferMerge::mergeRuns()
 
     outputTape.writePage();
 
-    for (const auto &tape : runTapes)
+    for (const Tape* tape : runTapes)
+    {
         readCount += static_cast<unsigned int>(tape->getReadCounter());
+        delete tape;
+    }
     writeCount += static_cast<unsigned int>(outputTape.getWriteCounter());
 }
 
@@ -171,9 +176,6 @@ void LargeBufferMerge::cleanup() const
     }
 }
 
-void LargeBufferMerge::copyToAnotherTape(Tape *in, Tape *out)
-{
-}
 
 void LargeBufferMerge::moveToOutput()
 {

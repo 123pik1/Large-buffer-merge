@@ -29,7 +29,6 @@ private:
     void mergeRuns();
     void flushBuffer(Tape &outputTape, std::vector<Number> &buffer);
     void cleanup() const;
-    void copyToAnotherTape(Tape* in, Tape* out);
     void moveToOutput();
 
     unsigned long long allTapes = 0;
