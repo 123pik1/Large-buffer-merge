@@ -21,7 +21,7 @@ private:
 
     int findEmpty();
     bool mergeOneRun(int idEmpty);
-    int findMinimumAmongActive(int idEmpty, bool *tapeHasData);
+    int findMinimumAmongActive(int idEmpty, const std::vector<bool> tapeHasData);
     int countNonEmpty();
     void writePages();
     void printTapes();

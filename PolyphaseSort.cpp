@@ -93,9 +93,13 @@ void PolyphaseSort::distributeInitialRuns()
         fibSum = totalRuns; // Update sum
     }
 
-    for (int i=0; i<numTapes; i++)
+    for (int i = 0; i < destCount; ++i)
     {
         tapes[i]->runsOnTape = fibCounts[i];
+    }
+    for (int i = destCount; i < numTapes; ++i)
+    {
+        tapes[i]->runsOnTape = 0;
     }
 
     vector<int> currentRunCount(numTapes, 0);
@@ -158,9 +162,11 @@ void PolyphaseSort::mergePhase()
             break;
         }
 
-       // póki jedna tasma nie bedzie pusta
-        while (mergeOneRun(idEmpty));
+        tapes[idEmpty]->clearTape();
+        tapes[idEmpty]->runsOnTape = 0;
 
+        // póki jedna tasma nie bedzie pusta
+        while (mergeOneRun(idEmpty));
 
         // TODO
         //  interMenu();
@@ -243,17 +249,15 @@ bool PolyphaseSort::mergeOneRun(int idEmpty)
 {
 
     // czy run się skonczył na danej taśmie
-    bool tapeHasData[tapeNumber];
-    // ostatnia liczba zapisana z taśmy
-    Number lastFromTape[tapeNumber];
-    bool sources[tapeNumber];
+    vector<bool> tapeHasData(numTapes);
+    vector<Number> lastFromTape(numTapes);
+    vector<bool> sources(numTapes);
 
-    for (int i = 0; i < tapeNumber; i++)
+    for (int i = 0; i < numTapes; ++i)
     {
         tapeHasData[i] = !tapes[i]->isEmpty();
-        sources[i] = !tapes[i]->isEmpty() || tapes[i]->runsOnTape>0;
+        sources[i] = (tapeHasData[i] || tapes[i]->runsOnTape > 0) && i != idEmpty;
     }
-
     while (true)
     {
         // index najmniejszej liczby
@@ -268,14 +272,14 @@ bool PolyphaseSort::mergeOneRun(int idEmpty)
         tapes[idLowest]->readNextNumber();
 
         // czy kolejny numer mniejszy od obecnego
-        if (tapes[idLowest]->isEmpty() ||
+        if (tapes[idLowest]->isEmpty() || tapes[idLowest]->runsOnTape == 0 ||
             lastFromTape[idLowest].isHigherThan(tapes[idLowest]->getCurrNumber()))
         {
             tapeHasData[idLowest] = false;
         }
 
         bool anyTapeActive = false;
-        for (int i = 0; i < tapeNumber; i++)
+        for (int i = 0; i < numTapes; i++)
         {
             if (tapeHasData[i])
             {
@@ -287,6 +291,7 @@ bool PolyphaseSort::mergeOneRun(int idEmpty)
             break;
     }
     tapes[idEmpty]->writePage();
+
     for (int i=0; i<numTapes;i++)
     {
         if(i==idEmpty)
@@ -295,7 +300,9 @@ bool PolyphaseSort::mergeOneRun(int idEmpty)
         {
             tapes[i]->runsOnTape--;
             if (sources[i] && tapes[i]->runsOnTape==0)
+            {
                 return false;
+            }
             if (tapes[i]->runsOnTape<0)
                 tapes[i]->runsOnTape=0;
         }
@@ -303,7 +310,7 @@ bool PolyphaseSort::mergeOneRun(int idEmpty)
     return true;
 }
 
-int PolyphaseSort::findMinimumAmongActive(int idEmpty, bool *tapeHasData)
+int PolyphaseSort::findMinimumAmongActive(int idEmpty, const vector<bool> tapeHasData)
 {
     // id najmniejszej
     int idLowest = -1;

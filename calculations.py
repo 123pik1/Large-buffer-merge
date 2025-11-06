@@ -2,7 +2,7 @@ import math
 
 # --- STAŁE (TWOJA SPECYFIKACJA PROJEKTU) ---
 MERGE_DEGREE = 2  # Stopień scalania (m) = 3 taśmy - 1 = 2
-BLOCK_SIZE_RECORDS = 4 # Rozmiar bloku w rekordach
+BLOCK_SIZE_RECORDS = 50 # Rozmiar bloku w rekordach
 
 # --- DANE DO ANALIZY ---
 EXPERIMENT_N_VALUES = [100, 500, 1000, 5000, 10000]

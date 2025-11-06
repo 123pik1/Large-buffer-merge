@@ -212,6 +212,7 @@ void Tape::deletePrevRecords()
 void Tape::clearTape()
 {
     runsOnTape=0;
+    empty=true;
     if (file.is_open())
         file.close();
 
