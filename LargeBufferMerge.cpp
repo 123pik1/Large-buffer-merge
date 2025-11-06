@@ -106,6 +106,7 @@ void LargeBufferMerge::createInitialRuns(Tape &inputTape)
 
 void LargeBufferMerge::mergeRuns()
 {
+    // Inicjalizacja konkretnej liczby taśm
     vector<Tape*> runTapes;
     for (int i = 0; i < activeTapes; i++)
     {
@@ -113,18 +114,21 @@ void LargeBufferMerge::mergeRuns()
         tape->goToBegin();
         runTapes.push_back(tape);
     }
+    // Taśma na output
     Tape outputTape(makeRunFilename(allTapes++));
 
+    // kolejka priorytetowa odpowiedzialna za sortowanie, z komparatorem szeregującym wg zasad z Number
     priority_queue<QueueEntry, vector<QueueEntry>, QueueEntryComparator> heap;
 
-    for (unsigned int idx = 0; idx < runTapes.size(); ++idx)
+    // inicjalizacja wartości początkowych w kolejce priorytetowej
+    for (unsigned int i = 0; i < runTapes.size(); i++)
     {
-        if (runTapes[idx]->isEmpty())
+        if (runTapes[i]->isEmpty())
             continue;
 
-        Number value = runTapes[idx]->getCurrNumber();
-        heap.push(QueueEntry{value, idx});
-        runTapes[idx]->readNextNumber();
+        Number value = runTapes[i]->getCurrNumber();
+        heap.push(QueueEntry{value, i});
+        runTapes[i]->readNextNumber();
     }
 
     vector<Number> buffer;
