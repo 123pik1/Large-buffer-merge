@@ -49,6 +49,8 @@ void LargeBufferMerge::sort()
     writeCount = 0;
 
     Tape inputTape(inputFile);
+    // TODO
+    // inputTape.printTape();
     {
         Tape outputTape(outputFile);
         outputTape.clearTape();
@@ -62,7 +64,7 @@ void LargeBufferMerge::sort()
         mergeCounter++;
     }
     moveToOutput();
-    
+    printStats();
 }
 
 void LargeBufferMerge::createInitialRuns(Tape &inputTape)
@@ -117,6 +119,8 @@ void LargeBufferMerge::mergeRuns()
     // Taśma na output
     Tape outputTape(makeRunFilename(allTapes++));
 
+    // TODO
+    // interMenu(runTapes);
     // kolejka priorytetowa odpowiedzialna za sortowanie, z komparatorem szeregującym wg zasad z Number
     priority_queue<QueueEntry, vector<QueueEntry>, QueueEntryComparator> heap;
 
@@ -134,6 +138,11 @@ void LargeBufferMerge::mergeRuns()
     vector<Number> buffer;
     buffer.reserve(bufferSize);
 
+    // Póki kolejka niepusta
+    // weź najmniejszy element, zapisz liczbę do buforu
+    // jeżeli bufor pełny - zapisz go w pliku
+    // sprawdź czy taśma wejściowa jest pusta (ta z której został wzięty ten najmniejszy numer)
+    // przeczytaj kolejną wartość
     while (!heap.empty())
     {
         QueueEntry smallest = heap.top();
@@ -143,7 +152,7 @@ void LargeBufferMerge::mergeRuns()
         if (buffer.size() >= bufferSize)
             flushBuffer(outputTape, buffer);
 
-        auto &sourceTape = runTapes[smallest.runIndex];
+        Tape* sourceTape = runTapes[smallest.runIndex];
         if (!sourceTape->isEmpty())
         {
             Number nextValue = sourceTape->getCurrNumber();
@@ -157,6 +166,8 @@ void LargeBufferMerge::mergeRuns()
 
     outputTape.writePage();
 
+
+
     for (const Tape* tape : runTapes)
     {
         readCount += static_cast<unsigned int>(tape->getReadCounter());
@@ -165,6 +176,7 @@ void LargeBufferMerge::mergeRuns()
     writeCount += static_cast<unsigned int>(outputTape.getWriteCounter());
 }
 
+// zapisuje bufor do taśmy
 void LargeBufferMerge::flushBuffer(Tape &outputTape, vector<Number> &buffer)
 {
     for (const auto &value : buffer)
@@ -172,6 +184,7 @@ void LargeBufferMerge::flushBuffer(Tape &outputTape, vector<Number> &buffer)
     buffer.clear();
 }
 
+// usuwa pliki tymczasowe
 void LargeBufferMerge::cleanup() const
 {
     for (int i=0; i<allTapes;i++)
@@ -180,7 +193,7 @@ void LargeBufferMerge::cleanup() const
     }
 }
 
-
+// przenosi plik w miejsce gdzie powinien znajdować się plik z rezultatem
 void LargeBufferMerge::moveToOutput()
 {
     using namespace filesystem;
@@ -295,7 +308,7 @@ void LargeBufferMerge::enterEntryFile()
     cin >> inputFile;
 }
 
-void LargeBufferMerge::interMenu()
+void LargeBufferMerge::interMenu(vector<Tape *> tapes)
 {
     if (autoMerge)
         return;
@@ -320,13 +333,28 @@ void LargeBufferMerge::interMenu()
         autoMerge = true;
         break;
     case 3:
-        printTapes();
+        printTapes(tapes);
         break;
     default:
         break;
     }
 }
 
-void LargeBufferMerge::printTapes()
+void LargeBufferMerge::printTapes(vector<Tape*> tapes)
 {
+    for (Tape* tape : tapes)
+    {
+        tape->printTape();
+    }
+}
+
+void LargeBufferMerge::printStats()
+{
+    cout << "==== Statystyki ====\n";
+    cout<<"Liczba merge'y "<<mergeCounter<<endl;
+    cout <<"Liczba zapisow: "<<writeCount<<endl;
+    cout <<"Liczba odczytów: "<<readCount<<endl;
+    cout << "Posortowane: \n";
+    Tape outTape(outputFile);
+    outTape.printTape();
 }
