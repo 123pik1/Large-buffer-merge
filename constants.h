@@ -15,3 +15,6 @@
 
 // lokacja taśmy tymczasowej
 #define tempTapeLocation "tapes/tmp"
+
+
+#define LARGE_BUFFER_SIZE 500 // 500 rekordów
