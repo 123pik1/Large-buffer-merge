@@ -54,4 +54,8 @@ public:
         return this->isHigherThan(other);
     }
 
+    std::string to_string() const
+    {
+        return numberString;
+    }
 };

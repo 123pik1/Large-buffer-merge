@@ -1,12 +1,24 @@
+#include "NaturalMerge.hpp"
 #include <iostream>
-#include "PolyphaseSort.hpp"
-using namespace std;
 
-int main()
+int main(int argc, char *argv[])
 {
-    // Number nmb1("-56921781675024989.2555453"), nmb2("-74871257181717776609032555743.6");
-    // cout << (nmb1 < nmb2) << endl;
-    PolyphaseSort algo(tapeNumber, InputFile,OutputFile);
-    algo.sort();
+    if (argc != 3)
+    {
+        std::cerr << "Usage: " << argv[0] << " <input_file> <output_file>\n";
+        return 1;
+    }
+
+    try
+    {
+        NaturalMerge sorter(argv[1], argv[2]);
+        sorter.sort();
+    }
+    catch (const std::exception &ex)
+    {
+        std::cerr << "Error: " << ex.what() << '\n';
+        return 1;
+    }
+
     return 0;
 }
