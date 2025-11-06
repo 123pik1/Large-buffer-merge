@@ -77,34 +77,20 @@ void PolyphaseSort::distributeInitialRuns()
         a = b;
         b = next;
     }
-    // int indexInFibcounts = 0;
-    // while (fibSum<totalRuns)
-    // {
-    //     int next = a+b;
-    //     a =b;
-    //     b = next;
-    //     fibSum=a+b;
-    //     fibCounts[indexInFibcounts] = next;
-    //     indexInFibcounts = (indexInFibcounts+1)%destCount;
-    // }
-
-
-    // reverse(fibCounts.begin(), fibCounts.end());
 
     if (totalRuns > fibSum)
     {
         int excess = totalRuns - fibSum;
-        int remainder = excess % destCount;
-        int index = 0;
-        while (totalRuns>fibSum)
+        for (int i = 0; i < destCount; ++i)
         {
-            a = b;
-            b = fibSum;
-            fibSum = a+b;
-            fibCounts[index] = b;
-            index++;
-            index%=destCount;
+            fibCounts[i] += excess / destCount;
         }
+        int remainder = excess % destCount;
+        for (int i = 0; i < remainder; ++i)
+        {
+            fibCounts[i]++;
+        }
+        fibSum = totalRuns; // Update sum
     }
 
     for (int i=0; i<numTapes; i++)
@@ -319,6 +305,7 @@ bool PolyphaseSort::mergeOneRun(int idEmpty)
         if (!anyTapeActive)
             break;
     }
+    tapes[idEmpty]->writePage();
     for (int i=0; i<numTapes;i++)
     {
         if(i==idEmpty)
@@ -326,7 +313,7 @@ bool PolyphaseSort::mergeOneRun(int idEmpty)
         else if(sources[i])
         {
             tapes[i]->runsOnTape--;
-            if (tapes[i]->runsOnTape==0)
+            if (sources[i] && tapes[i]->runsOnTape==0)
                 return false;
             if (tapes[i]->runsOnTape<0)
                 tapes[i]->runsOnTape=0;
