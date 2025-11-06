@@ -5,35 +5,40 @@
 #include <queue>
 #include <utility>
 #include <iostream>
+#include <filesystem>
 
 using namespace std;
 
-    std::string makeRunFilename(std::size_t index)
+string makeRunFilename(unsigned int index)
+{
+    return "tapes/run_" + to_string(index) + ".tmp";
+}
+
+struct QueueEntry
+{
+    Number value;
+    unsigned int runIndex;
+};
+
+struct QueueEntryComparator
+{
+    bool operator()(const QueueEntry &lhs, const QueueEntry &rhs) const
     {
-        return "tapes/run_" + std::to_string(index) + ".tmp";
+        return rhs.value < lhs.value;
     }
+};
 
-    struct QueueEntry
-    {
-        Number value;
-        unsigned int runIndex;
-    };
-
-    struct QueueEntryComparator
-    {
-        bool operator()(const QueueEntry &lhs, const QueueEntry &rhs) const
-        {
-            return rhs.value < lhs.value;
-        }
-    };
-
-
-LargeBufferMerge::LargeBufferMerge(unsigned int bufferSizeHint, string inputFile, string outputFile)
-    : bufferSize(bufferSizeHint == 0 ? 1 : bufferSizeHint), inputFile(inputFile), outputFile(outputFile)
+LargeBufferMerge::LargeBufferMerge(unsigned int bufferSizeHint, string inputFile, string outputFile, unsigned int activeTapes)
+    : bufferSize(bufferSizeHint == 0 ? 1 : bufferSizeHint), inputFile(inputFile), outputFile(outputFile), activeTapes(activeTapes)
 
 {
     readCount = 0;
     writeCount = 0;
+}
+
+LargeBufferMerge::~LargeBufferMerge()
+{
+    cleanup();
 }
 
 void LargeBufferMerge::sort()
@@ -42,34 +47,34 @@ void LargeBufferMerge::sort()
     writeCount = 0;
 
     Tape inputTape(inputFile);
-    Tape outputTape(outputFile);
-    outputTape.clearTape();
-
-    const auto runFiles = createInitialRuns(inputTape);
-
-    if (runFiles.empty())
     {
-        outputTape.writePage();
-        writeCount += static_cast<std::size_t>(outputTape.getWriteCounter());
-        cleanup(runFiles);
-        return;
+        Tape outputTape(outputFile);
+        outputTape.clearTape();
     }
 
-    mergeRuns(runFiles, outputTape);
-    cleanup(runFiles);
+    createInitialRuns(inputTape);
+
+    while (currentTape < allTapes-1)
+    {
+        mergeRuns();
+        mergeCounter++;
+    }
+    moveToOutput();
+    // Tape result(makeRunFilename(allTapes - 1));
+    // copyToAnotherTape(&result, &outputTape);
 }
 
-std::vector<std::string> LargeBufferMerge::createInitialRuns(Tape &inputTape)
+void LargeBufferMerge::createInitialRuns(Tape &inputTape)
 {
-    std::vector<std::string> runFiles;
-    std::vector<Number> buffer;
+    vector<string> runFiles;
+    vector<Number> buffer;
     buffer.reserve(bufferSize);
 
-    std::size_t runIndex = 0;
     while (!inputTape.isEmpty())
     {
+        // zapisanie do buforu BUFFER_SIZE rekordów
         buffer.clear();
-        for (std::size_t i = 0; i < bufferSize && !inputTape.isEmpty(); ++i)
+        for (unsigned int i = 0; i < bufferSize && !inputTape.isEmpty(); ++i)
         {
             buffer.push_back(inputTape.getCurrNumber());
             inputTape.readNextNumber();
@@ -77,42 +82,38 @@ std::vector<std::string> LargeBufferMerge::createInitialRuns(Tape &inputTape)
 
         if (buffer.empty())
             break;
-
+        // sortuje używając customowego porównania z klasy numer
         std::sort(buffer.begin(), buffer.end(), [](const Number &lhs, const Number &rhs)
                   { return lhs < rhs; });
 
-        const std::string runPath = makeRunFilename(runIndex++);
+        // zapisanie buforu do pliku
+        const string runPath = makeRunFilename(allTapes++);
         {
             Tape runTape(runPath);
             runTape.clearTape();
 
-            for (const auto &num : buffer)
+            for (const Number &num : buffer)
                 runTape.appendNumber(num);
 
             runTape.writePage();
-            writeCount += static_cast<std::size_t>(runTape.getWriteCounter());
+            writeCount += static_cast<unsigned int>(runTape.getWriteCounter());
         }
-
-        runFiles.push_back(runPath);
     }
-
-    readCount += static_cast<std::size_t>(inputTape.getReadCounter());
-    return runFiles;
+    readCount += static_cast<unsigned int>(inputTape.getReadCounter());
 }
 
-void LargeBufferMerge::mergeRuns(const std::vector<std::string> &runFiles, Tape &outputTape)
+void LargeBufferMerge::mergeRuns()
 {
-    std::vector<std::unique_ptr<Tape>> runTapes;
-    runTapes.reserve(runFiles.size());
-
-    for (const auto &path : runFiles)
+    vector<unique_ptr<Tape>> runTapes;
+    for (int i = 0; i < activeTapes; i++)
     {
-        auto tape = std::make_unique<Tape>(path);
+        unique_ptr<Tape> tape = make_unique<Tape>(makeRunFilename(currentTape++));
         tape->goToBegin();
-        runTapes.push_back(std::move(tape));
+        runTapes.push_back(move(tape));
     }
+    Tape outputTape(makeRunFilename(allTapes++));
 
-    std::priority_queue<QueueEntry, std::vector<QueueEntry>, QueueEntryComparator> heap;
+    priority_queue<QueueEntry, vector<QueueEntry>, QueueEntryComparator> heap;
 
     for (unsigned int idx = 0; idx < runTapes.size(); ++idx)
     {
@@ -124,7 +125,7 @@ void LargeBufferMerge::mergeRuns(const std::vector<std::string> &runFiles, Tape 
         runTapes[idx]->readNextNumber();
     }
 
-    std::vector<Number> buffer;
+    vector<Number> buffer;
     buffer.reserve(bufferSize);
 
     while (!heap.empty())
@@ -151,21 +152,51 @@ void LargeBufferMerge::mergeRuns(const std::vector<std::string> &runFiles, Tape 
     outputTape.writePage();
 
     for (const auto &tape : runTapes)
-        readCount += static_cast<std::size_t>(tape->getReadCounter());
-    writeCount += static_cast<std::size_t>(outputTape.getWriteCounter());
+        readCount += static_cast<unsigned int>(tape->getReadCounter());
+    writeCount += static_cast<unsigned int>(outputTape.getWriteCounter());
 }
 
-void LargeBufferMerge::flushBuffer(Tape &outputTape, std::vector<Number> &buffer)
+void LargeBufferMerge::flushBuffer(Tape &outputTape, vector<Number> &buffer)
 {
     for (const auto &value : buffer)
         outputTape.appendNumber(value);
     buffer.clear();
 }
 
-void LargeBufferMerge::cleanup(const std::vector<std::string> &runFiles) const
+void LargeBufferMerge::cleanup() const
 {
-    for (const auto &path : runFiles)
-        std::remove(path.c_str());
+    for (int i=0; i<allTapes;i++)
+    {
+        remove(makeRunFilename(i).c_str());
+    }
+}
+
+void LargeBufferMerge::copyToAnotherTape(Tape *in, Tape *out)
+{
+}
+
+void LargeBufferMerge::moveToOutput()
+{
+    using namespace filesystem;
+    path src;
+    path dest;
+
+    src = path(makeRunFilename(allTapes-1));
+    dest = path(outputFile);
+
+    error_code ec;
+    rename(src,dest,ec);
+    if (!ec)
+        return;
+
+    if (!copy_file(src, dest, copy_options::overwrite_existing, ec) || ec)
+    {
+        std::cerr << "Problem ze skopiowaniem: " << ec.message() << '\n';
+        return;
+    }
+    remove(src, ec);
+    if (ec)
+        std::cerr << "Problem z usunięciem pliku wejsciowego " << ec.message() << '\n';
 }
 
 //
