@@ -54,49 +54,42 @@ void PolyphaseSort::sort()
 void PolyphaseSort::distributeInitialRuns()
 {
     Tape inputTape(inputFile);
-    inputTape.printTape();
-    int tapeIndex = 0;
-    Number prev;
-    bool first = true;
+    // wyczyszczenie taśm
+    for (int i = 0; i < numTapes; ++i)
+        tapes[i]->clearTape();
 
-    int fibCurrent = 1;
-    int fibNext = 1;
-    int runCount = 0;
+
+    int destCount = numTapes - 1;
+    int tapeIndex = 0;
+
+    bool first = true;
+    Number prev;
 
     while (!inputTape.isEmpty())
     {
         Number curr = inputTape.getCurrNumber();
-        if (first || !(curr < prev))
+
+        if (first)
         {
             tapes[tapeIndex]->appendNumber(curr);
-            prev = curr;
             first = false;
         }
         else
         {
-
-            runCount++;
-            prev = curr;
-            first = false;
-            if (runCount >= fibCurrent)
+            if (curr < prev)
             {
-
-                tapeIndex = (tapeIndex + 1) % (numTapes - 1);
-                runCount = 0;
-
-                int temp = fibCurrent;
-                fibCurrent = fibNext;
-                fibNext = temp + fibNext;
+                tapeIndex = (tapeIndex + 1) % destCount;
             }
             tapes[tapeIndex]->appendNumber(curr);
         }
+
+        prev = curr;
         inputTape.readNextNumber();
     }
 
-    for (auto tape : tapes)
-    {
-        tape->writePage();
-    }
+    for (auto t : tapes)
+        t->writePage();
+
     readCounter += inputTape.getReadCounter();
     writeCounter += inputTape.getWriteCounter();
 }
@@ -139,6 +132,7 @@ void PolyphaseSort::mergePhase()
 
         tapes[idEmpty]->writePage();
 
+        //TODO
         // interMenu();
         mergeCounter++;
     }
