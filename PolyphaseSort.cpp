@@ -160,23 +160,7 @@ void PolyphaseSort::mergePhase()
 
        // póki jedna tasma nie bedzie pusta
         while (mergeOneRun(idEmpty));
-        // {
-        //     mergeOneRun(idEmpty);
-        //     // Check if any input tape still has data
-        //     // bool hasData = false;
-        //     // for (int i = 0; i < numTapes; i++)
-        //     // {
-        //     //     if (i != idEmpty && !tapes[i]->isEmpty())
-        //     //     {
-        //     //         hasData = true;
-        //     //         break;
-        //     //     }
-        //     // }
-        //     // if (!hasData)
-        //     //     break;
-        // }
 
-        tapes[idEmpty]->writePage();
 
         // TODO
         //  interMenu();
@@ -235,9 +219,7 @@ int PolyphaseSort::findEmpty()
     int destIndex = -1;
     for (int i = 0; i < numTapes; ++i)
     {
-        if (tapes[i]->runsOnTape>0)
-            continue;
-        if (tapes[i]->isEmpty() && tapes[i]->runsOnTape==0)
+        if (tapes[i]->runsOnTape==0)
         {
             destIndex = i;
             break;
@@ -285,14 +267,13 @@ bool PolyphaseSort::mergeOneRun(int idEmpty)
         lastFromTape[idLowest] = current; // zapisuje ostatni numer który został przekazany
         tapes[idLowest]->readNextNumber();
 
-        // Check if run ended: next number is smaller than current
+        // czy kolejny numer mniejszy od obecnego
         if (tapes[idLowest]->isEmpty() ||
             lastFromTape[idLowest].isHigherThan(tapes[idLowest]->getCurrNumber()))
         {
             tapeHasData[idLowest] = false;
         }
 
-        // Check if all runs finished
         bool anyTapeActive = false;
         for (int i = 0; i < tapeNumber; i++)
         {
