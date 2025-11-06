@@ -20,11 +20,12 @@ private:
     void copyToOutput();
 
     int findEmpty();
-    void mergeOneRun(int idEmpty);
+    bool mergeOneRun(int idEmpty);
     int findMinimumAmongActive(int idEmpty, bool *tapeHasData);
     int countNonEmpty();
     void writePages();
     void printTapes();
+    int countRuns();
 
     // wymogi zadania
     int readCounter = 0;

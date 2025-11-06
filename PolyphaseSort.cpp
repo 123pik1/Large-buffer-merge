@@ -47,23 +47,73 @@ void PolyphaseSort::sort()
     }
     // 3. Skopiowanie na taśmę outputu
     copyToOutput();
-
-    
 }
 
 void PolyphaseSort::distributeInitialRuns()
 {
+    int totalRuns = countRuns();
     Tape inputTape(inputFile);
     // wyczyszczenie taśm
     for (int i = 0; i < numTapes; ++i)
         tapes[i]->clearTape();
-
 
     int destCount = numTapes - 1;
     int tapeIndex = 0;
 
     bool first = true;
     Number prev;
+
+    vector<int> fibCounts;
+    int a = 1, b = 1;
+    fibCounts.push_back(a);
+    if (destCount > 1)
+        fibCounts.push_back(b);
+    int fibSum = a + b;
+    while (fibCounts.size() < destCount)
+    {
+        int next = a + b;
+        fibCounts.push_back(next);
+        fibSum += next;
+        a = b;
+        b = next;
+    }
+    // int indexInFibcounts = 0;
+    // while (fibSum<totalRuns)
+    // {
+    //     int next = a+b;
+    //     a =b;
+    //     b = next;
+    //     fibSum=a+b;
+    //     fibCounts[indexInFibcounts] = next;
+    //     indexInFibcounts = (indexInFibcounts+1)%destCount;
+    // }
+
+
+    // reverse(fibCounts.begin(), fibCounts.end());
+
+    if (totalRuns > fibSum)
+    {
+        int excess = totalRuns - fibSum;
+        int remainder = excess % destCount;
+        int index = 0;
+        while (totalRuns>fibSum)
+        {
+            a = b;
+            b = fibSum;
+            fibSum = a+b;
+            fibCounts[index] = b;
+            index++;
+            index%=destCount;
+        }
+    }
+
+    for (int i=0; i<numTapes; i++)
+    {
+        tapes[i]->runsOnTape = fibCounts[i];
+    }
+
+    vector<int> currentRunCount(numTapes, 0);
+    int runIndex = 0;
 
     while (!inputTape.isEmpty())
     {
@@ -72,13 +122,18 @@ void PolyphaseSort::distributeInitialRuns()
         if (first)
         {
             tapes[tapeIndex]->appendNumber(curr);
+            currentRunCount[tapeIndex]++;
             first = false;
         }
         else
         {
             if (curr < prev)
             {
-                tapeIndex = (tapeIndex + 1) % destCount;
+                currentRunCount[tapeIndex]++;
+                if (currentRunCount[tapeIndex] >= fibCounts[tapeIndex])
+                {
+                    tapeIndex = (tapeIndex + 1) % destCount;
+                }
             }
             tapes[tapeIndex]->appendNumber(curr);
         }
@@ -87,11 +142,12 @@ void PolyphaseSort::distributeInitialRuns()
         inputTape.readNextNumber();
     }
 
+
     for (auto t : tapes)
         t->writePage();
-
     readCounter += inputTape.getReadCounter();
     writeCounter += inputTape.getWriteCounter();
+    // printTapes();
 }
 
 /****
@@ -108,15 +164,7 @@ void PolyphaseSort::mergePhase()
     while (countNonEmpty() > 1)
     {
         // Find empty tape
-        int idEmpty = -1;
-        for (int i = 0; i < tapeNumber; i++)
-        {
-            if (tapes[i]->isEmpty())
-            {
-                idEmpty = i;
-                break;
-            }
-        }
+        int idEmpty = findEmpty();
 
         if (idEmpty == -1)
         {
@@ -124,16 +172,28 @@ void PolyphaseSort::mergePhase()
             break;
         }
 
-
-        while (tapes[idEmpty]->isEmpty() || findEmpty()==-1)
-        {
-            mergeOneRun(idEmpty);
-        }
+       // póki jedna tasma nie bedzie pusta
+        while (mergeOneRun(idEmpty));
+        // {
+        //     mergeOneRun(idEmpty);
+        //     // Check if any input tape still has data
+        //     // bool hasData = false;
+        //     // for (int i = 0; i < numTapes; i++)
+        //     // {
+        //     //     if (i != idEmpty && !tapes[i]->isEmpty())
+        //     //     {
+        //     //         hasData = true;
+        //     //         break;
+        //     //     }
+        //     // }
+        //     // if (!hasData)
+        //     //     break;
+        // }
 
         tapes[idEmpty]->writePage();
 
-        //TODO
-        // interMenu();
+        // TODO
+        //  interMenu();
         mergeCounter++;
     }
 }
@@ -162,7 +222,6 @@ void PolyphaseSort::copyToOutput()
             break;
         }
     }
-
     if (sortedTape)
     {
         Tape outputTape(outputFile);
@@ -183,7 +242,6 @@ void PolyphaseSort::copyToOutput()
         cout << "Tasma wynikowa: \n";
         outputTape.printTape();
     }
-    
 }
 
 int PolyphaseSort::findEmpty()
@@ -191,7 +249,9 @@ int PolyphaseSort::findEmpty()
     int destIndex = -1;
     for (int i = 0; i < numTapes; ++i)
     {
-        if (tapes[i]->isEmpty())
+        if (tapes[i]->runsOnTape>0)
+            continue;
+        if (tapes[i]->isEmpty() && tapes[i]->runsOnTape==0)
         {
             destIndex = i;
             break;
@@ -210,17 +270,20 @@ int PolyphaseSort::findEmpty()
  * 7. jeżeli nowy numer jest >= zapisuje go do kolejki
  * 8. wróć do 3
  */
-void PolyphaseSort::mergeOneRun(int idEmpty)
+// returns true when there is needed another mergeOneRun for this idEmpty
+bool PolyphaseSort::mergeOneRun(int idEmpty)
 {
 
     // czy run się skonczył na danej taśmie
     bool tapeHasData[tapeNumber];
     // ostatnia liczba zapisana z taśmy
     Number lastFromTape[tapeNumber];
+    bool sources[tapeNumber];
 
     for (int i = 0; i < tapeNumber; i++)
     {
         tapeHasData[i] = !tapes[i]->isEmpty();
+        sources[i] = !tapes[i]->isEmpty() || tapes[i]->runsOnTape>0;
     }
 
     while (true)
@@ -256,6 +319,20 @@ void PolyphaseSort::mergeOneRun(int idEmpty)
         if (!anyTapeActive)
             break;
     }
+    for (int i=0; i<numTapes;i++)
+    {
+        if(i==idEmpty)
+            tapes[i]->runsOnTape++;
+        else if(sources[i])
+        {
+            tapes[i]->runsOnTape--;
+            if (tapes[i]->runsOnTape==0)
+                return false;
+            if (tapes[i]->runsOnTape<0)
+                tapes[i]->runsOnTape=0;
+        }
+    }
+    return true;
 }
 
 int PolyphaseSort::findMinimumAmongActive(int idEmpty, bool *tapeHasData)
@@ -283,7 +360,7 @@ int PolyphaseSort::countNonEmpty()
     int counter = 0;
     for (Tape *tape : tapes)
     {
-        if (!tape->isEmpty())
+        if (tape->runsOnTape!=0)
             counter++;
     }
     return counter;
@@ -303,13 +380,60 @@ void PolyphaseSort::printTapes()
         tape->printTape();
 }
 
+int PolyphaseSort::countRuns()
+{
+    int runs = 0;
+    Tape countTape(inputFile);
+    bool first = true;
+    Number prev;
+    while (!countTape.isEmpty())
+    {
+        Number curr = countTape.getCurrNumber();
+        if (first)
+        {
+            runs=1;
+            first=false;
+        }
+        else
+        {
+            if (curr<prev)
+                runs++;
+        }
+        prev=curr;
+        countTape.readNextNumber();
+    }
+    readCounter += countTape.getReadCounter();
+    return runs;
+}
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+////
+//
+//
+//
+//
+////
+//
+//
+//
+//
+//
 // wymogi zadania
 void PolyphaseSort::startMenu()
 {
     int choice;
     cout << "\n=== start menu ===" << endl;
     cout << "1. Wygeneruj dane" << endl;
-    cout << "2. Ile merge'y przed kolejnym menu"<<endl;
+    cout << "2. Ile merge'y przed kolejnym menu" << endl;
     cout << "3. Wprowadz dane z klawiatury" << endl;
     cout << "4. Załaduj z pliku" << endl;
     cout << "5. Ustaw tryb auto" << endl;
@@ -329,7 +453,7 @@ void PolyphaseSort::startMenu()
     case 4:
         enterEntryFile();
     case 5:
-        autoMerge=true;
+        autoMerge = true;
     default:
         break;
     }
@@ -355,12 +479,12 @@ void PolyphaseSort::enterData()
     cout << "chcesz wyczyścic wejście? y/n\n";
     string answ;
     cin >> answ;
-    if (answ=="y")
+    if (answ == "y")
         inputTape.clearTape();
     cout << "ile liczb?\n";
     int n;
     cin >> n;
-    for (int i=0; i<n;i++)
+    for (int i = 0; i < n; i++)
     {
         string nmb;
         cin >> nmb;
@@ -377,7 +501,7 @@ void PolyphaseSort::interMenu()
 {
     if (autoMerge)
         return;
-    if (mergesToPrintMenu>0)
+    if (mergesToPrintMenu > 0)
     {
         mergesToPrintMenu--;
         return;
@@ -392,7 +516,7 @@ void PolyphaseSort::interMenu()
     switch (choice)
     {
     case 1:
-        cin>>mergesToPrintMenu;
+        cin >> mergesToPrintMenu;
         break;
     case 2:
         autoMerge = true;

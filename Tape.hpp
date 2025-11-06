@@ -64,6 +64,7 @@ public:
         return writeCounter;
     }
 
+    int runsOnTape=0;
 private:
     // metody pomocnicze
     void initFile();
