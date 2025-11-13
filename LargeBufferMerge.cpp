@@ -43,8 +43,8 @@ LargeBufferMerge::~LargeBufferMerge()
 
 void LargeBufferMerge::sort()
 {
-    //TODO
-//    startMenu();
+    // TODO
+    //    startMenu();
     readCount = 0;
     writeCount = 0;
 
@@ -58,9 +58,13 @@ void LargeBufferMerge::sort()
 
     createInitialRuns(inputTape);
 
-    while (currentTape < allTapes-1)
+    while (currentTape < allTapes - 1)
     {
-        mergeRuns();
+        tapeEndForThisPhase = allTapes;
+        while (currentTape < tapeEndForThisPhase-1)
+        {
+            mergeRuns();
+        }
         mergeCounter++;
     }
     moveToOutput();
@@ -109,10 +113,10 @@ void LargeBufferMerge::createInitialRuns(Tape &inputTape)
 void LargeBufferMerge::mergeRuns()
 {
     // Inicjalizacja konkretnej liczby taśm
-    vector<Tape*> runTapes;
+    vector<Tape *> runTapes;
     for (int i = 0; i < activeTapes; i++)
     {
-        Tape* tape = new Tape(makeRunFilename(currentTape++));
+        Tape *tape = new Tape(makeRunFilename(currentTape++));
         tape->goToBegin();
         runTapes.push_back(tape);
     }
@@ -152,7 +156,7 @@ void LargeBufferMerge::mergeRuns()
         if (buffer.size() >= bufferSize)
             flushBuffer(outputTape, buffer);
 
-        Tape* sourceTape = runTapes[smallest.runIndex];
+        Tape *sourceTape = runTapes[smallest.runIndex];
         if (!sourceTape->isEmpty())
         {
             Number nextValue = sourceTape->getCurrNumber();
@@ -166,9 +170,7 @@ void LargeBufferMerge::mergeRuns()
 
     outputTape.writePage();
 
-
-
-    for (const Tape* tape : runTapes)
+    for (const Tape *tape : runTapes)
     {
         readCount += static_cast<unsigned int>(tape->getReadCounter());
         delete tape;
@@ -187,7 +189,7 @@ void LargeBufferMerge::flushBuffer(Tape &outputTape, vector<Number> &buffer)
 // usuwa pliki tymczasowe
 void LargeBufferMerge::cleanup() const
 {
-    for (int i=0; i<allTapes;i++)
+    for (int i = 0; i < allTapes; i++)
     {
         remove(makeRunFilename(i).c_str());
     }
@@ -200,11 +202,11 @@ void LargeBufferMerge::moveToOutput()
     path src;
     path dest;
 
-    src = path(makeRunFilename(allTapes-1));
+    src = path(makeRunFilename(allTapes - 1));
     dest = path(outputFile);
 
     error_code ec;
-    rename(src,dest,ec);
+    rename(src, dest, ec);
     if (!ec)
         return;
 
@@ -340,9 +342,9 @@ void LargeBufferMerge::interMenu(vector<Tape *> tapes)
     }
 }
 
-void LargeBufferMerge::printTapes(vector<Tape*> tapes)
+void LargeBufferMerge::printTapes(vector<Tape *> tapes)
 {
-    for (Tape* tape : tapes)
+    for (Tape *tape : tapes)
     {
         tape->printTape();
     }
@@ -351,9 +353,9 @@ void LargeBufferMerge::printTapes(vector<Tape*> tapes)
 void LargeBufferMerge::printStats()
 {
     cout << "==== Statystyki ====\n";
-    cout<<"Liczba merge'y "<<mergeCounter<<endl;
-    cout <<"Liczba zapisow: "<<writeCount<<endl;
-    cout <<"Liczba odczytów: "<<readCount<<endl;
+    cout << "Liczba merge'y " << mergeCounter << endl;
+    cout << "Liczba zapisow: " << writeCount << endl;
+    cout << "Liczba odczytów: " << readCount << endl;
     cout << "Posortowane: \n";
     Tape outTape(outputFile);
     outTape.printTape();

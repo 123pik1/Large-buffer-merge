@@ -33,6 +33,7 @@ private:
 
     unsigned long long allTapes = 0;
     unsigned long long currentTape = 0;
+    unsigned long long tapeEndForThisPhase = 0;
 
     // wymogi zadania
     void startMenu();

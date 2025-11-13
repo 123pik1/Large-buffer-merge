@@ -7,7 +7,7 @@
 
 int main(int argc, char *argv[])
 {
-    LargeBufferMerge merger;
+    LargeBufferMerge merger(LARGE_BUFFER_SIZE,InputFile,OutputFile,tapeNumber);
     merger.sort();
 
     return 0;
