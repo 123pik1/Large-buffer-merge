@@ -37,13 +37,13 @@ private:
 
     // wymogi zadania
     void startMenu();
-    void interMenu(std::vector<Tape *> tapes);
+    void interMenu();
     int mergeCounter = 0;
     bool autoMerge = false;
     int mergesToPrintMenu = 0;
     void runPyScript();
     void enterData();
     void enterEntryFile();
-    void printTapes(std::vector<Tape *> tapes);
+    void printTapes();
     void printStats();
 };

@@ -4,7 +4,7 @@
 // liczba taśm nie mniejsza od 3
 #define tapeNumber 3
 // lokalizacja pliku z którego jest wczytywanie
-#define InputFile "data/data3"
+#define InputFile "data/data1"
 // bazowa nazwa pliku z taśmą
 #define baseFileName "tapes/tape"
 // lokalizacja pliku do którego jest zapisany wynik

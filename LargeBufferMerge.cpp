@@ -44,13 +44,13 @@ LargeBufferMerge::~LargeBufferMerge()
 void LargeBufferMerge::sort()
 {
     // TODO
-    //    startMenu();
+       startMenu();
     readCount = 0;
     writeCount = 0;
 
     Tape inputTape(inputFile);
     // TODO
-    // inputTape.printTape();
+    inputTape.printTape();
     {
         Tape outputTape(outputFile);
         outputTape.clearTape();
@@ -60,12 +60,15 @@ void LargeBufferMerge::sort()
 
     while (currentTape < allTapes - 1)
     {
+        // TODO
+        interMenu();
         tapeEndForThisPhase = allTapes;
         while (currentTape < tapeEndForThisPhase-1)
         {
             mergeRuns();
         }
         mergeCounter++;
+        
     }
     moveToOutput();
     printStats();
@@ -123,8 +126,7 @@ void LargeBufferMerge::mergeRuns()
     // Taśma na output
     Tape outputTape(makeRunFilename(allTapes++));
 
-    // TODO
-    // interMenu(runTapes);
+    
     // kolejka priorytetowa odpowiedzialna za sortowanie, z komparatorem szeregującym wg zasad z Number
     priority_queue<QueueEntry, vector<QueueEntry>, QueueEntryComparator> heap;
 
@@ -310,7 +312,7 @@ void LargeBufferMerge::enterEntryFile()
     cin >> inputFile;
 }
 
-void LargeBufferMerge::interMenu(vector<Tape *> tapes)
+void LargeBufferMerge::interMenu()
 {
     if (autoMerge)
         return;
@@ -335,18 +337,20 @@ void LargeBufferMerge::interMenu(vector<Tape *> tapes)
         autoMerge = true;
         break;
     case 3:
-        printTapes(tapes);
+        printTapes();
         break;
     default:
         break;
     }
 }
 
-void LargeBufferMerge::printTapes(vector<Tape *> tapes)
+void LargeBufferMerge::printTapes()
 {
-    for (Tape *tape : tapes)
+    unsigned long long currentPrintTape = currentTape;
+    for (;currentPrintTape<allTapes;currentPrintTape++)
     {
-        tape->printTape();
+        Tape tape(makeRunFilename(currentPrintTape));
+        tape.printTape();
     }
 }
 
