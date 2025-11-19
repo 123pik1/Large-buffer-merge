@@ -24,10 +24,11 @@
 # ...existing code...
 import math
 
-nmbOfRecords = [1500, 10000, 50000, 200000, 1000000]
+nmbOfRecords = [1500, 20001, 50000, 200000,1000000]
 records_per_page = 50     # records per page
-buffer_records = 500      # records that fit in buffer (was bufferSize)
-tapeNumber = 3            # optional cap on merge degree
+buffer_records = 500     # records that fit in buffer (was bufferSize)
+# tapeNumber = 3            # optional cap on merge degree
+tapeNumber = 10
 
 # convert buffer capacity in records -> pages available in memory
 buffer_pages = max(1, math.ceil(buffer_records / records_per_page))

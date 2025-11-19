@@ -27,7 +27,7 @@ void Tape::readPage()
     file.seekg(beginningPos);
 
     int itemsRead = 0;
-    for (int i = 0; i < pageSize; i++)
+    for (int i = 0; i < SMALL_BUFFER_SIZE; i++)
     {
         if (file >> nmb)
         {
@@ -64,18 +64,18 @@ void Tape::readPage()
     if (itemsRead > 0)
         elementOnReadPage = 0;
     else
-        elementOnReadPage = pageSize;
+        elementOnReadPage = SMALL_BUFFER_SIZE;
 
     readCounter++;
 }
 
 void Tape::readNextNumber()
 {
-    if (elementOnReadPage >= pageSize)
+    if (elementOnReadPage >= SMALL_BUFFER_SIZE)
     {
         readPage();
     }
-    if (elementOnReadPage >= pageSize)
+    if (elementOnReadPage >= SMALL_BUFFER_SIZE)
     {
         currNmb.setNumberString("");
         return;
@@ -122,7 +122,7 @@ void Tape::appendNumber(const Number &nmb)
 {
     if (!nmb.isEmpty())
         empty = false;
-    if (elementOnWritePage >= pageSize)
+    if (elementOnWritePage >= SMALL_BUFFER_SIZE)
     {
         writePage();
     }
@@ -132,7 +132,7 @@ void Tape::appendNumber(const Number &nmb)
 
 bool Tape::isEmpty()
 {
-    if (elementOnReadPage < pageSize && !readPageTab[elementOnReadPage].isEmpty())
+    if (elementOnReadPage < SMALL_BUFFER_SIZE && !readPageTab[elementOnReadPage].isEmpty())
         return false;
     if (!currNmb.isEmpty())
         return false;
@@ -160,7 +160,7 @@ void Tape::printTape()
     cout << "wyswietlanie tasmy " << filename << '\n';
     if (!currNmb.isEmpty())
         cout << currNmb.getNumberString() << '\n';
-    for (int i = elementOnReadPage; i < pageSize; i++)
+    for (int i = elementOnReadPage; i < SMALL_BUFFER_SIZE; i++)
         if (!readPageTab[i].isEmpty())
             cout << readPageTab[i].getNumberString() << '\n';
     string nmb;
@@ -211,8 +211,8 @@ void Tape::deletePrevRecords()
 
 void Tape::clearTape()
 {
-    runsOnTape=0;
-    empty=true;
+    runsOnTape = 0;
+    empty = true;
     if (file.is_open())
         file.close();
 
@@ -241,7 +241,7 @@ void Tape::initFile()
 
 void Tape::resetWritePage()
 {
-    for (int i = 0; i < pageSize; i++)
+    for (int i = 0; i < SMALL_BUFFER_SIZE; i++)
     {
         writePageTab[i].setNumberString("");
     }
@@ -250,9 +250,9 @@ void Tape::resetWritePage()
 
 void Tape::resetReadPage()
 {
-    for (int i = 0; i < pageSize; i++)
+    for (int i = 0; i < SMALL_BUFFER_SIZE; i++)
     {
         readPageTab[i].setNumberString("");
     }
-    elementOnReadPage = pageSize;
+    elementOnReadPage = SMALL_BUFFER_SIZE;
 }

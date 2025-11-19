@@ -9,9 +9,11 @@
 class LargeBufferMerge
 {
 public:
-    explicit LargeBufferMerge(unsigned int bufferSize = LARGE_BUFFER_SIZE, std::string inputFile = InputFile, std::string outputFile = OutputFile, unsigned int activeTapes=tapeNumber);
+    explicit LargeBufferMerge(unsigned int bufferSize = LARGE_BUFFER_SIZE, std::string inputFile = InputFile, std::string outputFile = OutputFile);
     ~LargeBufferMerge();
     void sort();
+    // ile stron zmieści wielki bufor
+    int largeBufferSize = 10;
 
     unsigned int getReadCount() const noexcept { return readCount; }
     unsigned int getWriteCount() const noexcept { return writeCount; }
@@ -26,10 +28,11 @@ private:
     std::string outputFile;
 
     void createInitialRuns(Tape &inputTape);
-    void mergeRuns();
+    bool mergeRuns(unsigned int limit);
     void flushBuffer(Tape &outputTape, std::vector<Number> &buffer);
     void cleanup() const;
     void moveToOutput();
+    void bufferFlush(Number *buffer, Tape* fileOut);
 
     unsigned long long allTapes = 0;
     unsigned long long currentTape = 0;

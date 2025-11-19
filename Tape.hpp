@@ -19,24 +19,24 @@ private:
 
     Number currNmb;
 
-    Number writePageTab[pageSize];
     int elementOnWritePage = 0;
 
-    Number readPageTab[pageSize];
-    int elementOnReadPage = pageSize;
+    int elementOnReadPage = SMALL_BUFFER_SIZE;
 
     bool empty;
 
     std::streampos beginningPos = 0;
 
     // metody:
-    void readPage();
 
 public:
     // konieczność dla algorytmu
 
     Tape(std::string filename);
     ~Tape();
+
+    Number writePageTab[SMALL_BUFFER_SIZE];
+    Number readPageTab[SMALL_BUFFER_SIZE];
 
     void readNextNumber();
     Number getCurrNumber();
@@ -48,6 +48,7 @@ public:
     void goToBegin();
     void deletePrevRecords();
     void clearTape();
+    void readPage();
 
     // debugowanie + wymogi zadania
     void printTape();
@@ -64,7 +65,13 @@ public:
         return writeCounter;
     }
 
-    int runsOnTape=0;
+    int runsOnTape = 0;
+
+    Tape(Tape &&other) noexcept = default;
+    Tape &operator=(Tape &&other) noexcept = default;
+    Tape(const Tape &) = delete;
+    Tape &operator=(const Tape &) = delete;
+
 private:
     // metody pomocnicze
     void initFile();
