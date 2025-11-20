@@ -2,7 +2,6 @@
 
 // liczba taśm wykorzystywanych do sortowania
 // liczba taśm nie mniejsza od 3
-#define tapeNumber 9
 // lokalizacja pliku z którego jest wczytywanie
 #define InputFile "data/exampleData"
 // bazowa nazwa pliku z taśmą

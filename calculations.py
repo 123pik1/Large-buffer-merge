@@ -24,7 +24,7 @@
 # ...existing code...
 import math
 
-nmbOfRecords = [1500, 20001, 50000, 200000,1000000]
+nmbOfRecords = [1500, 10000, 50000, 200000,1000000]
 records_per_page = 50     # records per page
 buffer_records = 500     # records that fit in buffer (was bufferSize)
 # tapeNumber = 3            # optional cap on merge degree

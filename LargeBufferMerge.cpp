@@ -48,6 +48,7 @@ void LargeBufferMerge::sort()
     startMenu();
     readCount = 0;
     writeCount = 0;
+    mergeCounter=0;
 
     Tape inputTape(inputFile);
     // TODO
@@ -61,14 +62,16 @@ void LargeBufferMerge::sort()
 
     while (currentTape < allTapes - 1)
     {
-        // TODO
         tapeEndForThisPhase = allTapes;
 
         while (currentTape < tapeEndForThisPhase - 1)
             mergeRuns(tapeEndForThisPhase);
+        // TODO
+
         interMenu();
         mergeCounter++;
     }
+
     moveToOutput();
     printStats();
 }
@@ -188,9 +191,17 @@ void LargeBufferMerge::flushBuffer(Tape &outputTape, vector<Number> &buffer)
 // usuwa pliki tymczasowe
 void LargeBufferMerge::cleanup() const
 {
-    for (int i = 0; i < allTapes; i++)
+    namespace fs = std::filesystem;
+    std::string dir = "tapes";
+
+    try
     {
-        remove(makeRunFilename(i).c_str());
+        fs::remove_all(dir);
+        fs::create_directory(dir);
+    }
+    catch (const fs::filesystem_error &e)
+    {
+        cerr << "Error podczas czyszczenia folderu: " << e.what() << endl;
     }
 }
 
@@ -363,4 +374,5 @@ void LargeBufferMerge::printStats()
     cout << "Liczba faz " << mergeCounter << endl;
     cout << "Liczba zapisow: " << writeCount << endl;
     cout << "Liczba odczytów: " << readCount << endl;
+    cout << "suma dostępów do dysku: "<<readCount+writeCount<<endl;
 }
